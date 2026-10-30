@@ -2,7 +2,7 @@
 const SAMPLE_TRAINING = `# Montage Türverkleidung vorne links
 untertitel: Arbeitsschritte, Sicherheit und Qualitätsprüfung an Station T-04
 bereich: Montage Tür
-dauer: 15 Minuten
+dauer: 20 Minuten
 version: 1.2
 autor: Andreas Knaub
 ---
