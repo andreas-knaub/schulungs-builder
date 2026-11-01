@@ -110,7 +110,7 @@ const SLIDE_CSS = `
 
 /* Kopfzeile: weiße Navbar mit Abstand, feiner Schatten statt dicker Linie */
 .layout-light .l-top{height:auto;padding:24px 64px;border-bottom:0;background:#FFFFFF;box-shadow:0 1px 3px rgba(16,24,40,.06),0 1px 2px rgba(16,24,40,.04)}
-.l-logo{height:52px}
+.l-logo{height:104px}
 
 /* Linien unten: nur noch dezent */
 .layout-light .s-progress{height:3px}
