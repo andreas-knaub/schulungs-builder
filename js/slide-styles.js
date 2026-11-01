@@ -75,7 +75,7 @@ const SLIDE_CSS = `
 .e-qr svg{width:236px;height:236px;display:block}
 
 /* Helles Layout: große Logo-Fläche und Kopfleiste mit Logo */
-.layout-light .l-top{order:-1;flex:none;height:100px;display:flex;align-items:center;justify-content:space-between;gap:32px;padding:0 64px;background:var(--bg);border-bottom:4px solid var(--accent)}
+.layout-light .l-top{order:-1;flex:none;height:auto;display:flex;align-items:center;justify-content:space-between;gap:32px;padding:16 64px;background:var(--bg);border-bottom:4px solid var(--accent)}
 .l-logo{height:104px;display:flex;align-items:center;color:var(--primary)}
 .l-logo svg,.l-logo img{height:100%;width:auto;max-width:600px;object-fit:contain;display:block}
 .layout-light .l-logo img,.tl-logo img{mix-blend-mode:multiply}
