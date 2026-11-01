@@ -6,6 +6,7 @@ Erstellt aus einfachem Text automatisch Schulungsunterlagen im Corporate Design.
 
 - **Text rein, Schulung raus:** einfache Syntax, Live-Vorschau aller Folien
 - **Corporate Design per Klick:** Logo, Farben und Schrift kommen aus einer Vorlage (`js/themes.js`)
+- **Design-Editor:** eigenes Logo hochladen und Farben wählen, alle Folien passen sich sofort an (wird nur im Browser gespeichert)
 - **Arbeitsschritte automatisch nummeriert**, mit Fortschrittsbalken und „Schritt 2 von 4“
 - **Sicherheits- und Qualitätshinweise** als hervorgehobene Boxen
 - **Wissenscheck:** interaktive Quizfragen mit Richtig/Falsch-Anzeige
@@ -53,6 +54,7 @@ bild: bilder/schritt1.jpg
 | `js/render.js` | Baut aus den Folien-Objekten HTML im gewählten Design |
 | `js/themes.js` | Corporate-Design-Vorlagen (Farben, Schrift, Logo) |
 | `js/slide-styles.js` | Layout der Folien (1280 × 720 px) |
+| `js/design-editor.js` | Eigenes Corporate Design anlegen (Logo, Farben) |
 | `js/exporter.js` | Export als eigenständige HTML-Datei |
 | `js/gemini.js` | Anbindung an die Gemini API |
 | `js/app.js` | Verbindet Editor, Vorschau, Präsentation und Export |

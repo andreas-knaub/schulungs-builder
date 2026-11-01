@@ -6,6 +6,27 @@
 
 const THEMES = [
   {
+    // Premium-Automotive-Stil: Weiß, tiefes Schwarz, kräftiges Blau
+    id: "automotive-blue",
+    name: "Automotive Blue",
+    font: "'Barlow', 'Helvetica Neue', Arial, sans-serif",
+    colors: {
+      primary: "#16171A",
+      accent: "#1C69D4",
+      accentText: "#1C69D4",
+      bg: "#FFFFFF",
+      surface: "#F2F4F7",
+      text: "#16171A",
+      mutedText: "#5C6370",
+      line: "#DADDE2",
+      warnBg: "#FFF1DC",
+      warnText: "#7A4300",
+      tipBg: "#E7F0FC",
+      tipText: "#0F4A99"
+    },
+    logo: `<svg viewBox="0 0 250 40" xmlns="http://www.w3.org/2000/svg" aria-label="Automotive"><rect x="0" y="6" width="6" height="28" fill="currentColor"/><rect x="10" y="6" width="6" height="28" fill="#1C69D4"/><rect x="20" y="6" width="6" height="28" fill="currentColor" opacity=".45"/><text x="38" y="29" font-family="Barlow, Arial, sans-serif" font-size="22" font-weight="600" fill="currentColor" letter-spacing="3">AUTOMOTIVE</text></svg>`
+  },
+  {
     id: "musterwerk",
     name: "Musterwerk GmbH",
     font: "'Barlow', 'Helvetica Neue', Arial, sans-serif",
@@ -68,8 +89,67 @@ const THEMES = [
   }
 ];
 
+// ---------------------------------------------------------------
+// Eigenes Design (über den Design-Editor angelegt)
+// Wird nur im Browser des Nutzers gespeichert, nie auf GitHub.
+// ---------------------------------------------------------------
+
+const CUSTOM_THEME_ID = "eigenes-design";
+const CUSTOM_THEME_KEY = "sb.customTheme";
+
+function loadCustomThemeConfig() {
+  try { return JSON.parse(localStorage.getItem(CUSTOM_THEME_KEY)); } catch (e) { return null; }
+}
+
+function saveCustomThemeConfig(config) {
+  try { localStorage.setItem(CUSTOM_THEME_KEY, JSON.stringify(config)); return true; }
+  catch (e) { return false; } // z. B. Logo zu groß für den Browser-Speicher
+}
+
+function removeCustomThemeConfig() {
+  try { localStorage.removeItem(CUSTOM_THEME_KEY); } catch (e) { /* ignorieren */ }
+}
+
+// Kontrast zweier Farben nach WCAG (für lesbare Textfarben)
+function contrastRatio(hexA, hexB) {
+  const lum = hex => {
+    const rgb = hex.replace("#", "").match(/.{2}/g).map(h => parseInt(h, 16) / 255)
+      .map(v => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)));
+    return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+  };
+  const [a, b] = [lum(hexA), lum(hexB)].sort((x, y) => y - x);
+  return (a + 0.05) / (b + 0.05);
+}
+
+function buildCustomTheme(config) {
+  const name = config.name || "Eigenes Design";
+  const logo = config.logo
+    ? `<img src="${config.logo}" alt="${escapeHtml(name)}" class="${config.logoWhite ? "logo-invert" : ""}">`
+    : `<svg viewBox="0 0 250 40" xmlns="http://www.w3.org/2000/svg"><text x="0" y="29" font-family="Barlow, Arial, sans-serif" font-size="24" font-weight="700" fill="currentColor">${escapeHtml(name)}</text></svg>`;
+
+  return {
+    id: CUSTOM_THEME_ID,
+    name: `${name} (eigenes Design)`,
+    font: config.font || THEMES[0].font,
+    colors: {
+      ...THEMES[0].colors,
+      primary: config.primary,
+      accent: config.accent,
+      // Akzent nur als Textfarbe nutzen, wenn er auf Weiß gut lesbar ist
+      accentText: contrastRatio(config.accent, "#FFFFFF") >= 4.5 ? config.accent : config.primary,
+      tipText: config.primary
+    },
+    logo
+  };
+}
+
+function allThemes() {
+  const config = loadCustomThemeConfig();
+  return config ? [...THEMES, buildCustomTheme(config)] : THEMES;
+}
+
 function getTheme(id) {
-  return THEMES.find(t => t.id === id) || THEMES[0];
+  return allThemes().find(t => t.id === id) || THEMES[0];
 }
 
 // Wandelt die Farben einer Vorlage in CSS-Variablen um

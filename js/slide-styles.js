@@ -34,6 +34,8 @@ const SLIDE_CSS = `
 .s-foot{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:0 72px 30px;font-size:15px;color:var(--muted-text)}
 .s-foot .s-logo{height:26px;color:var(--primary);display:flex}
 .s-foot .s-logo svg{height:100%;width:auto}
+.s-logo img{height:100%;width:auto;max-width:260px;object-fit:contain;display:block}
+.t-band .logo-invert{filter:brightness(0) invert(1)}
 .s-progress{position:absolute;left:0;bottom:0;height:7px;background:var(--accent)}
 
 /* Titelfolie */

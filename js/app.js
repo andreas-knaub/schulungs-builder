@@ -200,16 +200,24 @@ function setSource(text) {
   render();
 }
 
-// ---------- Start ----------
-
-function init() {
-  THEMES.forEach(t => {
+// Auswahlliste der Designs (inkl. eigenem Design) neu aufbauen
+function fillThemeSelect(selectedId) {
+  els.themeSelect.innerHTML = "";
+  allThemes().forEach(t => {
     const opt = document.createElement("option");
     opt.value = t.id;
     opt.textContent = t.name;
     els.themeSelect.appendChild(opt);
   });
-  els.themeSelect.value = store.get(STORAGE.theme) || THEMES[0].id;
+  const exists = allThemes().some(t => t.id === selectedId);
+  els.themeSelect.value = exists ? selectedId : THEMES[0].id;
+  store.set(STORAGE.theme, els.themeSelect.value);
+}
+
+// ---------- Start ----------
+
+function init() {
+  fillThemeSelect(store.get(STORAGE.theme) || THEMES[0].id);
   els.editor.value = store.get(STORAGE.source) ?? SAMPLE_TRAINING;
 
   els.editor.addEventListener("input", scheduleRender);
