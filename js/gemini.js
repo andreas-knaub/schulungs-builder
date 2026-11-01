@@ -9,7 +9,7 @@
 // ---------------------------------------------------------------
 
 function buildPrompt(rawText) {
-  return `Du bist Experte für Schulungsunterlagen in der Fahrzeugmontage.
+  return `Du bist Experte für Schulungsunterlagen in der Produktion, sowohl für Arbeitsabläufe als auch für die Einführung neuer Software am Shopfloor.
 Erstelle aus dem folgenden Rohtext eine klare, praxisnahe Schulung für Mitarbeitende am Band.
 
 Antworte AUSSCHLIESSLICH im folgenden Textformat, ohne Erklärungen und ohne Code-Block:
@@ -43,6 +43,20 @@ Regeln:
 - Erstelle am Ende 1 bis 2 Wissensfragen mit je 3 bis 4 Antworten, genau eine richtig.
 - Schreibe auf Deutsch, in einfacher Sprache, Sie-Form.
 - Erfinde keine Fakten, die nicht im Rohtext stehen. Wenn etwas fehlt, lass es weg.
+
+App-Bildschirme (NUR wenn es um eine Software, App oder ein Tablet-/PC-Programm geht):
+Füge bei Schritten, die in der Software stattfinden, unter den Punkten einen gezeichneten Bildschirm hinzu:
+handy: <App-Name> | <Name der Seite>
+feld: <Beschriftung> | <Beispielwert>
+liste: <Beschriftung> | <ausgewählter Eintrag>
+auswahl: <Beschriftung> | *<gewählte Option>, <Option>, <Option>
+foto: <Text auf der Foto-Fläche>
+hinweis-app: <kurzer Infotext in der App>
+button!: <Button, auf den in diesem Schritt getippt wird>
+button: <weiterer Button>
+- Nutze pro Bildschirm 2 bis 5 Elemente und genau einen button!.
+- Beispielwerte (z. B. eine Fahrzeugnummer) dürfen erfunden sein, die Bedienschritte müssen zum Rohtext passen.
+- Bei reinen Handarbeitsschritten ohne Software lass die Bildschirm-Zeilen weg.
 
 Rohtext:
 """

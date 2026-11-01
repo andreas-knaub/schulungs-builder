@@ -123,6 +123,52 @@ function renderTitleSlide(slide, theme, meta, stepCount) {
     </section>`;
 }
 
+// ---------------------------------------------------------------
+// Gezeichneter App-Bildschirm in einem Handy-Rahmen.
+// Es gibt keine echte App: Das Tool zeichnet die Oberfläche aus den
+// Zeilen handy:, feld:, liste:, auswahl:, foto: und button: im Text.
+// ---------------------------------------------------------------
+const PHONE_ICONS = {
+  scan: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 8v8M11 8v8M15 8v8"/></svg>`,
+  down: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>`,
+  camera: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h3l2-3h6l2 3h3v13H4z"/><circle cx="12" cy="13" r="4"/></svg>`
+};
+
+function renderPhone(screen) {
+  const fields = [];
+  const buttons = [];
+  for (const el of screen.elements) {
+    const label = el.label ? `<div class="ph-lbl">${escapeHtml(el.label)}</div>` : "";
+    if (el.kind === "feld") {
+      const icon = /barcode|fahrzeug|scan|fin/i.test(el.label) ? PHONE_ICONS.scan : "";
+      fields.push(`<div>${label}<div class="ph-field"><span>${escapeHtml(el.value)}</span>${icon}</div></div>`);
+    } else if (el.kind === "liste") {
+      fields.push(`<div>${label}<div class="ph-field"><span>${escapeHtml(el.value)}</span>${PHONE_ICONS.down}</div></div>`);
+    } else if (el.kind === "auswahl") {
+      const chips = el.options.map(o => `<span class="ph-chip${o.selected ? " on" : ""}">${escapeHtml(o.text)}</span>`).join("");
+      fields.push(`<div>${label}<div class="ph-chips">${chips}</div></div>`);
+    } else if (el.kind === "foto") {
+      fields.push(`<div class="ph-photo">${PHONE_ICONS.camera}${escapeHtml(el.text)}</div>`);
+    } else if (el.kind === "hinweis-app") {
+      fields.push(`<div class="ph-note">${escapeHtml(el.text)}</div>`);
+    } else if (el.kind === "button") {
+      buttons.push(`<div class="ph-btn-wrap${el.highlight ? " is-tap" : ""}"><div class="ph-btn">${escapeHtml(el.text)}</div></div>`);
+    }
+  }
+  return `
+    <div class="ph" role="img" aria-label="App-Bildschirm ${escapeHtml(screen.title)}">
+      <div class="ph-screen">
+        <div class="ph-notch"></div>
+        <div class="ph-bar">
+          ${screen.app ? `<div class="ph-app">${escapeHtml(screen.app)}</div>` : ""}
+          <div class="ph-title">${escapeHtml(screen.title)}</div>
+        </div>
+        <div class="ph-content">${fields.join("")}</div>
+        ${buttons.length ? `<div class="ph-actions">${buttons.join("")}</div>` : ""}
+      </div>
+    </div>`;
+}
+
 function renderContentSlide(slide, theme, meta, index, total) {
   const isStep = slide.type === "step";
   const main = renderItems(slide.items);
@@ -131,6 +177,32 @@ function renderContentSlide(slide, theme, meta, index, total) {
 
   // Mit Bild: Text + Hinweise links, Bild rechts.
   // Ohne Bild: Text links, Hinweise rechts.
+  const head = `
+      <div class="s-head">
+        ${isStep ? `<div class="s-badge">${slide.stepNumber}</div>` : ""}
+        <div>
+          <div class="s-kicker">${isStep ? `Schritt ${slide.stepNumber} von ${meta.stepCount}` : escapeHtml(meta.trainingTitle || "")}</div>
+          <h2 class="s-title">${inline(slide.title)}</h2>
+        </div>
+        ${headLogo(theme)}
+      </div>`;
+  const foot = footer(theme, meta, index, total, isStep ? `Schritt ${slide.stepNumber} von ${meta.stepCount}` : "");
+
+  // Mit App-Bildschirm: Text links, gezeichnetes Handy rechts
+  if (slide.screen) {
+    return `
+    <section class="${slideClass(theme, "has-phone")}" style="${themeStyle(theme)}">
+      <div class="ph-wrap">
+        <div class="ph-left">
+          ${head}
+          <div class="s-body single"><div class="s-col">${main}${boxes}</div></div>
+        </div>
+        <div class="ph-right">${renderPhone(slide.screen)}</div>
+      </div>
+      ${foot}
+    </section>`;
+  }
+
   let body;
   if (image) {
     body = `<div class="s-body"><div class="s-col">${main}${boxes}</div><div class="s-col">${image}</div></div>`;

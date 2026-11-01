@@ -42,8 +42,28 @@ function parseTraining(source) {
 
     for (const line of lines) {
       const metaMatch = line.match(/^([a-zäöü]+):\s*(.+)$/i);
+      const screenMatch = line.match(/^(handy|feld|liste|auswahl|foto|button!?|hinweis-app):\s*(.+)$/i);
 
-      if (line.startsWith("# ")) {
+      if (screenMatch) {
+        // Zeilen für den gezeichneten App-Bildschirm
+        if (!slide.screen) slide.screen = { app: "", title: "", elements: [] };
+        const key = screenMatch[1].toLowerCase();
+        const [left, right] = screenMatch[2].split("|").map(s => s.trim());
+        if (key === "handy") {
+          slide.screen.app = right !== undefined ? left : "";
+          slide.screen.title = right !== undefined ? right : left;
+        } else if (key === "auswahl") {
+          const options = (right !== undefined ? right : left).split(",").map(o => o.trim()).filter(Boolean)
+            .map(o => ({ text: o.replace(/^\*/, "").trim(), selected: o.startsWith("*") }));
+          slide.screen.elements.push({ kind: "auswahl", label: right !== undefined ? left : "", options });
+        } else if (key === "feld" || key === "liste") {
+          slide.screen.elements.push({ kind: key, label: right !== undefined ? left : "", value: right !== undefined ? right : left });
+        } else if (key === "button" || key === "button!") {
+          slide.screen.elements.push({ kind: "button", text: left, highlight: key === "button!" });
+        } else {
+          slide.screen.elements.push({ kind: key, text: left });
+        }
+      } else if (line.startsWith("# ")) {
         slide.type = "title";
         slide.title = line.slice(2).trim();
       } else if (line.startsWith("## ")) {
@@ -81,7 +101,7 @@ function parseTraining(source) {
     }
 
     // Ein Block nur mit Metadaten ergibt keine eigene Folie
-    if (!slide.title && !slide.question && slide.items.length === 0 && !slide.image) continue;
+    if (!slide.title && !slide.question && slide.items.length === 0 && !slide.image && !slide.screen) continue;
     slides.push(slide);
   }
 

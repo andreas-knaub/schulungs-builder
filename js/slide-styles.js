@@ -75,7 +75,7 @@ const SLIDE_CSS = `
 .e-qr svg{width:236px;height:236px;display:block}
 
 /* Helles Layout: große Logo-Fläche und Kopfleiste mit Logo */
-.layout-light .l-top{order:-1;flex:none;height:auto;display:flex;align-items:center;justify-content:space-between;gap:32px;padding:16 64px;background:var(--bg);border-bottom:4px solid var(--accent)}
+.layout-light .l-top{order:-1;flex:none;height:auto;display:flex;align-items:center;justify-content:space-between;gap:32px;padding:16px 64px;background:var(--bg);border-bottom:4px solid var(--accent)}
 .l-logo{height:104px;display:flex;align-items:center;color:var(--primary)}
 .l-logo svg,.l-logo img{height:100%;width:auto;max-width:600px;object-fit:contain;display:block}
 .layout-light .l-logo img,.tl-logo img{mix-blend-mode:multiply}
@@ -132,4 +132,33 @@ const SLIDE_CSS = `
 
 /* Quiz und Abschluss: Karten statt grauer Kästen */
 .layout-light .q-opt,.layout-light .e-stat{background:#FFFFFF;border:1px solid #E4E6EA;box-shadow:0 1px 3px rgba(16,24,40,.06)}
+
+/* ===== Gezeichneter App-Bildschirm (Handy) ===== */
+.ph-wrap{flex:1;display:flex;min-height:0}
+.ph-left{flex:1;min-width:0;display:flex;flex-direction:column}
+.has-phone .s-head,.has-phone .s-body{padding-right:24px}
+.has-phone .s-body{padding-top:28px}
+.ph-right{flex:none;width:340px;padding:24px 64px 24px 0;display:flex;align-items:center;justify-content:center;min-height:0}
+.ph{width:272px;height:100%;max-height:548px;background:#16171A;border-radius:44px;padding:11px;box-shadow:0 20px 50px rgba(16,24,40,.22),0 4px 12px rgba(16,24,40,.12)}
+.ph-screen{width:100%;height:100%;background:#F6F7F9;border-radius:34px;overflow:hidden;display:flex;flex-direction:column;position:relative;font-family:var(--font)}
+.ph-notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:80px;height:22px;background:#16171A;border-radius:12px}
+.ph-bar{flex:none;background:var(--accent);color:#fff;padding:42px 18px 14px}
+.ph-app{font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.85;font-weight:600}
+.ph-title{font-size:21px;font-weight:700;margin-top:2px;line-height:1.2}
+.ph-content{flex:1;min-height:0;overflow:hidden;padding:14px 14px 0;display:flex;flex-direction:column;gap:11px}
+.ph-lbl{font-size:11px;color:#5C6370;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.ph-field{background:#fff;border:1px solid #DADDE2;border-radius:10px;padding:10px 12px;font-size:15px;color:#16171A;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ph-field span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ph-field svg{flex:none;width:18px;height:18px;color:#5C6370}
+.ph-chips{display:flex;flex-wrap:wrap;gap:6px}
+.ph-chip{border:1px solid #DADDE2;background:#fff;border-radius:999px;padding:5px 11px;font-size:13px;color:#16171A}
+.ph-chip.on{background:var(--tip-bg);border-color:var(--accent);color:var(--tip-text);font-weight:600}
+.ph-photo{flex:1;min-height:44px;max-height:72px;border:1.5px dashed #B9BEC7;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;color:#5C6370}
+.ph-photo svg{width:18px;height:18px}
+.ph-note{background:var(--tip-bg);color:var(--tip-text);border-radius:10px;padding:9px 11px;font-size:13px;line-height:1.35}
+.ph-actions{flex:none;padding:12px 14px 18px;display:flex;flex-direction:column;gap:8px}
+.ph-btn-wrap{border-radius:16px;padding:4px;border:3px solid transparent}
+.ph-btn-wrap.is-tap{border-color:#E8A33D}
+.ph-btn{background:var(--accent);color:#fff;border-radius:11px;text-align:center;padding:12px;font-size:16px;font-weight:700}
+.ph-btn-wrap:not(.is-tap) .ph-btn{background:#fff;color:var(--accent-text);border:1px solid #DADDE2}
 `;

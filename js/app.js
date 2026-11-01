@@ -228,6 +228,7 @@ function init() {
   $("btn-html").addEventListener("click", exportHtml);
   $("btn-ai").addEventListener("click", openAiDialog);
   $("btn-sample").addEventListener("click", () => { setSource(SAMPLE_TRAINING); showToast("Beispiel geladen.", true); });
+  $("btn-sample-sw").addEventListener("click", () => { setSource(SAMPLE_SOFTWARE); showToast("Software-Beispiel geladen.", true); });
   $("btn-clear").addEventListener("click", () => { setSource(""); showToast("Inhalt geleert.", true); });
 
   $("p-prev").addEventListener("click", () => showPresentSlide(presentIndex - 1));
