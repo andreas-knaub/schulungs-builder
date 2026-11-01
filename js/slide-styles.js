@@ -103,4 +103,33 @@ const SLIDE_CSS = `
 .tl-kpi b{display:block;font-size:46px;line-height:1;font-weight:700;color:var(--text)}
 .tl-kpi span{font-size:17px;color:var(--muted-text)}
 .tl-bar{position:absolute;left:0;right:0;bottom:0;height:10px;background:var(--accent)}
+/* ===== Design-Update: ruhiger und moderner ===== */
+/* Folie: heller Grauton statt reinem Weiß, Titelfolie bleibt weiß */
+.layout-light{background:#F4F4F6}
+.slide.t-light{background:#FFFFFF}
+
+/* Kopfzeile: weiße Navbar mit Abstand, feiner Schatten statt dicker Linie */
+.layout-light .l-top{height:auto;padding:24px 64px;border-bottom:0;background:#FFFFFF;box-shadow:0 1px 3px rgba(16,24,40,.06),0 1px 2px rgba(16,24,40,.04)}
+.l-logo{height:52px}
+
+/* Linien unten: nur noch dezent */
+.layout-light .s-progress{height:3px}
+.tl-bar{height:4px}
+
+/* Schritt-Nummer: abgerundetes Quadrat in zartem Blau */
+.layout-light .s-badge{width:64px;height:64px;border-radius:16px;font-size:30px;background:#E8F0FB;color:var(--accent-text)}
+
+/* Aufzählung: mehr Luft, dunkelgrau statt schwarz, runde Punkte */
+.s-list{gap:24px;line-height:1.5;color:#3A3F47}
+.s-list li::before{width:8px;height:8px;border-radius:50%;margin-top:15px}
+
+/* Hinweis-Karten: weiß, abgerundet, Akzent links, feiner Schatten */
+.s-box{background:#FFFFFF;color:#3A3F47;border-radius:12px;border-left:4px solid var(--accent);padding:22px 26px;box-shadow:0 1px 3px rgba(16,24,40,.08),0 6px 16px rgba(16,24,40,.05)}
+.s-box b{color:var(--accent-text)}
+.s-box svg{color:var(--accent-text)}
+.s-warn{border-left-color:#E8A33D}
+.s-warn b,.s-warn svg{color:#9A5A0B}
+
+/* Quiz und Abschluss: Karten statt grauer Kästen */
+.layout-light .q-opt,.layout-light .e-stat{background:#FFFFFF;border:1px solid #E4E6EA;box-shadow:0 1px 3px rgba(16,24,40,.06)}
 `;
