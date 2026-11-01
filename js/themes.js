@@ -6,6 +6,28 @@
 
 const THEMES = [
   {
+    // Helles Layout mit großem Logo: gedacht für echte Firmenlogos
+    id: "premium-light",
+    name: "Premium Light (mit Logo)",
+    layout: "light",
+    font: "'Barlow', 'Helvetica Neue', Arial, sans-serif",
+    colors: {
+      primary: "#16171A",
+      accent: "#1C69D4",
+      accentText: "#1C69D4",
+      bg: "#FFFFFF",
+      surface: "#F3F5F8",
+      text: "#16171A",
+      mutedText: "#5C6370",
+      line: "#DADDE2",
+      warnBg: "#FFF1DC",
+      warnText: "#7A4300",
+      tipBg: "#E7F0FC",
+      tipText: "#0F4A99"
+    },
+    logo: `<svg viewBox="0 0 250 40" xmlns="http://www.w3.org/2000/svg" aria-label="Ihr Logo"><rect x="1" y="1" width="248" height="38" rx="4" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="6 5" opacity=".5"/><text x="125" y="26" text-anchor="middle" font-family="Barlow, Arial, sans-serif" font-size="16" font-weight="600" fill="currentColor" opacity=".6" letter-spacing="2">IHR LOGO</text></svg>`
+  },
+  {
     // Premium-Automotive-Stil: Weiß, tiefes Schwarz, kräftiges Blau
     id: "automotive-blue",
     name: "Automotive Blue",
@@ -130,6 +152,8 @@ function buildCustomTheme(config) {
   return {
     id: CUSTOM_THEME_ID,
     name: `${name} (eigenes Design)`,
+    layout: config.layout === "dark" ? "dark" : "light",
+    headerDark: config.layout === "light-dark",
     font: config.font || THEMES[0].font,
     colors: {
       ...THEMES[0].colors,

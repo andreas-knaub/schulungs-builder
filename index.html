@@ -140,7 +140,16 @@
     </div>
 
     <label class="field">
-      <span>Logo (PNG, JPG oder SVG, max. 1 MB)</span>
+      <span>Layout</span>
+      <select id="d-layout">
+        <option value="light">Große Logo-Fläche, weiße Kopfleiste (empfohlen)</option>
+        <option value="light-dark">Große Logo-Fläche, dunkle Kopfleiste (Logo mit transparentem Hintergrund)</option>
+        <option value="dark">Klassisch: dunkles Titelband</option>
+      </select>
+    </label>
+
+    <label class="field">
+      <span>Logo (am besten PNG mit transparentem Hintergrund oder SVG, max. 1 MB)</span>
       <input type="file" id="d-logo" accept="image/png,image/jpeg,image/svg+xml,image/webp">
     </label>
     <div class="logo-preview" id="d-logo-preview" hidden></div>

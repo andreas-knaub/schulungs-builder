@@ -15,6 +15,7 @@
     accent: document.getElementById("d-accent"),
     logo: document.getElementById("d-logo"),
     logoWhite: document.getElementById("d-logo-white"),
+    layout: document.getElementById("d-layout"),
     preview: document.getElementById("d-logo-preview"),
     status: document.getElementById("d-status")
   };
@@ -29,7 +30,8 @@
       primary: d.primary.value,
       accent: d.accent.value,
       logo: draft ? draft.logo : null,
-      logoWhite: d.logoWhite.checked
+      logoWhite: d.logoWhite.checked,
+      layout: d.layout.value
     };
   }
 
@@ -66,6 +68,7 @@
     d.primary.value = backup ? backup.primary : "#16171A";
     d.accent.value = backup ? backup.accent : "#1C69D4";
     d.logoWhite.checked = backup ? Boolean(backup.logoWhite) : false;
+    d.layout.value = backup && backup.layout ? backup.layout : "light";
     d.logo.value = "";
     d.status.textContent = "";
     d.status.classList.remove("error");
@@ -107,7 +110,10 @@
     reader.readAsDataURL(file);
   });
 
-  [d.name, d.primary, d.accent, d.logoWhite].forEach(el => el.addEventListener("input", applyDraft));
+  [d.name, d.primary, d.accent, d.logoWhite, d.layout].forEach(el => {
+    el.addEventListener("input", applyDraft);
+    el.addEventListener("change", applyDraft);
+  });
 
   d.form.addEventListener("submit", e => {
     e.preventDefault();

@@ -73,4 +73,34 @@ const SLIDE_CSS = `
 .e-stat span{font-size:18px;color:var(--muted-text)}
 .e-qr{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:22px;display:flex;flex-direction:column;align-items:center;gap:12px;font-size:16px;color:var(--muted-text);text-align:center}
 .e-qr svg{width:236px;height:236px;display:block}
+
+/* Helles Layout: große Logo-Fläche und Kopfleiste mit Logo */
+.layout-light .l-top{order:-1;flex:none;height:100px;display:flex;align-items:center;justify-content:space-between;gap:32px;padding:0 64px;background:var(--bg);border-bottom:4px solid var(--accent)}
+.l-logo{height:64px;display:flex;align-items:center;color:var(--primary)}
+.l-logo svg,.l-logo img{height:100%;width:auto;max-width:300px;object-fit:contain;display:block}
+.layout-light .l-logo img,.tl-logo img{mix-blend-mode:multiply}
+.l-meta{text-align:right;font-size:16px;line-height:1.45;color:var(--muted-text)}
+.l-meta b{display:block;font-size:18px;color:var(--text)}
+.layout-light.head-dark .l-top{background:var(--primary)}
+.layout-light.head-dark .l-logo{color:#fff}
+.layout-light.head-dark .l-logo img{mix-blend-mode:normal}
+.layout-light.head-dark .l-meta{color:rgba(255,255,255,.72)}
+.layout-light.head-dark .l-meta b{color:#fff}
+.layout-light .s-head{padding-top:40px}
+.layout-light .s-head .s-kicker{display:none}
+.layout-light .s-badge{background:var(--accent)}
+.layout-light .s-body{padding-bottom:40px}
+.layout-light .e-grid{padding-bottom:40px}
+.slide.t-light{flex-direction:row}
+.tl-logo-area{width:45%;flex:none;background:var(--surface);display:flex;align-items:center;justify-content:center;padding:56px}
+.tl-logo{height:260px;max-width:100%;display:flex;align-items:center;justify-content:center;color:var(--primary)}
+.tl-logo svg,.tl-logo img{height:100%;width:auto;max-width:100%;object-fit:contain;display:block}
+.tl-main{flex:1;padding:72px 72px 88px;display:flex;flex-direction:column;justify-content:center;gap:22px}
+.tl-main h1{font-size:60px;line-height:1.04;margin:0;font-weight:700;color:var(--text)}
+.tl-kpis{display:flex;margin-top:14px;border-top:1px solid var(--line);padding-top:24px}
+.tl-kpi{flex:1;padding-right:20px}
+.tl-kpi+.tl-kpi{border-left:1px solid var(--line);padding-left:24px}
+.tl-kpi b{display:block;font-size:46px;line-height:1;font-weight:700;color:var(--text)}
+.tl-kpi span{font-size:17px;color:var(--muted-text)}
+.tl-bar{position:absolute;left:0;right:0;bottom:0;height:10px;background:var(--accent)}
 `;

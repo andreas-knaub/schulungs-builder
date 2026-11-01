@@ -44,8 +44,17 @@ function renderBoxes(items) {
     .join("");
 }
 
-function footer(theme, meta, index, total) {
+function footer(theme, meta, index, total, stepLabel = "") {
   const pct = ((index + 1) / total) * 100;
+  if (isLight(theme)) {
+    // Kopfleiste oben (per CSS nach oben sortiert): Logo links, Titel und Position rechts
+    return `
+    <div class="l-top">
+      <div class="l-logo">${theme.logo}</div>
+      <div class="l-meta"><b>${escapeHtml(meta.trainingTitle || "")}</b>${stepLabel ? escapeHtml(stepLabel) + " · " : ""}Folie ${index + 1} / ${total}</div>
+    </div>
+    <div class="s-progress" style="width:${pct.toFixed(2)}%"></div>`;
+  }
   return `
     <div class="s-foot">
       <div class="s-logo">${theme.logo}</div>
@@ -55,7 +64,41 @@ function footer(theme, meta, index, total) {
     <div class="s-progress" style="width:${pct.toFixed(2)}%"></div>`;
 }
 
+// Helle Variante: Logo steht prominent auf Weiß (ideal für echte Firmenlogos)
+function isLight(theme) { return theme.layout === "light"; }
+function slideClass(theme, extra = "") { return ["slide", isLight(theme) ? "layout-light" : "", isLight(theme) && theme.headerDark ? "head-dark" : "", extra].filter(Boolean).join(" "); }
+function headLogo(theme) { return ""; } // Logo steht im hellen Layout in der Kopfleiste
+
+function renderTitleSlideLight(slide, theme, meta, stepCount, chips) {
+  // Kennzahlen unter dem Titel: Schritte, Dauer, Version
+  const dauerZahl = meta.dauer ? meta.dauer.replace(/\s*Minuten?$/i, "") : "";
+  const kpis = [
+    [stepCount, "Arbeitsschritte"],
+    ...(meta.dauer ? [[dauerZahl, /Minute/i.test(meta.dauer) ? "Minuten" : "Dauer"]] : []),
+    ...(meta.version ? [[meta.version, "Version"]] : [])
+  ].map(([v, l]) => `<div class="tl-kpi"><b>${escapeHtml(v)}</b><span>${l}</span></div>`).join("");
+
+  return `
+    <section class="${slideClass(theme, "t-light")}" style="${themeStyle(theme)}">
+      <div class="tl-logo-area"><div class="tl-logo">${theme.logo}</div></div>
+      <div class="tl-main">
+        <div class="s-kicker">Schulungsunterlage${meta.bereich ? " · " + escapeHtml(meta.bereich) : ""}</div>
+        <h1>${inline(slide.title)}</h1>
+        ${meta.untertitel ? `<p class="t-sub">${inline(meta.untertitel)}</p>` : ""}
+        ${renderItems(slide.items)}
+        <div class="tl-kpis">${kpis}</div>
+        ${chips ? `<div class="t-meta">${chips}</div>` : ""}
+      </div>
+      <div class="tl-bar"></div>
+    </section>`;
+}
+
 function renderTitleSlide(slide, theme, meta, stepCount) {
+  if (isLight(theme)) {
+    const lightChips = [["Erstellt von", meta.autor]].filter(([, v]) => v)
+      .map(([k, v]) => `<span class="t-chip"><i>${k}</i>${escapeHtml(v)}</span>`).join("");
+    return renderTitleSlideLight(slide, theme, meta, stepCount, lightChips);
+  }
   const chips = [
     ["Bereich", meta.bereich], ["Dauer", meta.dauer],
     ["Version", meta.version], ["Erstellt von", meta.autor]
@@ -98,16 +141,17 @@ function renderContentSlide(slide, theme, meta, index, total) {
   }
 
   return `
-    <section class="slide" style="${themeStyle(theme)}">
+    <section class="${slideClass(theme)}" style="${themeStyle(theme)}">
       <div class="s-head">
         ${isStep ? `<div class="s-badge">${slide.stepNumber}</div>` : ""}
         <div>
           <div class="s-kicker">${isStep ? `Schritt ${slide.stepNumber} von ${meta.stepCount}` : escapeHtml(meta.trainingTitle || "")}</div>
           <h2 class="s-title">${inline(slide.title)}</h2>
         </div>
+        ${headLogo(theme)}
       </div>
       ${body}
-      ${footer(theme, meta, index, total)}
+      ${footer(theme, meta, index, total, isStep ? `Schritt ${slide.stepNumber} von ${meta.stepCount}` : "")}
     </section>`;
 }
 
@@ -119,12 +163,13 @@ function renderQuizSlide(slide, theme, meta, index, total) {
     </button>`).join("");
 
   return `
-    <section class="slide" style="${themeStyle(theme)}">
+    <section class="${slideClass(theme)}" style="${themeStyle(theme)}">
       <div class="s-head">
         <div>
           <div class="s-kicker">${escapeHtml(meta.trainingTitle || "Wissenscheck")}</div>
           <h2 class="s-title">${inline(slide.title || "Wissenscheck")}</h2>
         </div>
+        ${headLogo(theme)}
       </div>
       <div class="s-body single">
         <div class="s-col">
@@ -140,12 +185,13 @@ function renderEndSlide(parsed, theme, meta, index, total, qrSvg) {
   const warnCount = parsed.slides.reduce((n, s) => n + s.items.filter(i => i.kind === "warn").length, 0);
   const quizCount = parsed.slides.filter(s => s.type === "quiz").length;
   return `
-    <section class="slide" style="${themeStyle(theme)}">
+    <section class="${slideClass(theme)}" style="${themeStyle(theme)}">
       <div class="s-head">
         <div>
           <div class="s-kicker">Zusammenfassung</div>
           <h2 class="s-title">Schulung abgeschlossen</h2>
         </div>
+        ${headLogo(theme)}
       </div>
       <div class="e-grid${qrSvg ? "" : " no-qr"}">
         <div>
