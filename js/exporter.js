@@ -36,10 +36,10 @@ const VIEWER_JS = `
   window.addEventListener('resize',fit);fit();show(0);
 })();`;
 
-function buildStandaloneHtml(deckHtml, title) {
+function buildStandaloneHtml(deckHtml, title, lang = "de") {
   const safeTitle = escapeHtml(title || "Schulung");
   return `<!doctype html>
-<html lang="de">
+<html lang="${escapeHtml(lang)}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">

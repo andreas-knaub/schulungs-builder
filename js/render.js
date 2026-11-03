@@ -39,8 +39,8 @@ function renderBoxes(items) {
   return items
     .filter(i => i.kind === "warn" || i.kind === "tip")
     .map(i => i.kind === "warn"
-      ? `<div class="s-box s-warn">${ICONS.warn}<div><b>Sicherheit</b>${inline(i.text)}</div></div>`
-      : `<div class="s-box s-tip">${ICONS.tip}<div><b>Hinweis</b>${inline(i.text)}</div></div>`)
+      ? `<div class="s-box s-warn">${ICONS.warn}<div><b>${L.safety}</b>${inline(i.text)}</div></div>`
+      : `<div class="s-box s-tip">${ICONS.tip}<div><b>${L.tip}</b>${inline(i.text)}</div></div>`)
     .join("");
 }
 
@@ -51,14 +51,14 @@ function footer(theme, meta, index, total, stepLabel = "") {
     return `
     <div class="l-top">
       <div class="l-logo">${theme.logo}</div>
-      <div class="l-meta"><b>${escapeHtml(meta.trainingTitle || "")}</b>${stepLabel ? escapeHtml(stepLabel) + " · " : ""}Folie ${index + 1} / ${total}</div>
+      <div class="l-meta"><b>${escapeHtml(meta.trainingTitle || "")}</b>${stepLabel ? escapeHtml(stepLabel) + " · " : ""}${L.slide} ${index + 1} / ${total}</div>
     </div>
     <div class="s-progress" style="width:${pct.toFixed(2)}%"></div>`;
   }
   return `
     <div class="s-foot">
       <div class="s-logo">${theme.logo}</div>
-      <div>${escapeHtml(meta.trainingTitle || "")}${meta.version ? " · Version " + escapeHtml(meta.version) : ""}</div>
+      <div>${escapeHtml(meta.trainingTitle || "")}${meta.version ? " · " + L.version + " " + escapeHtml(meta.version) : ""}</div>
       <div>${index + 1} / ${total}</div>
     </div>
     <div class="s-progress" style="width:${pct.toFixed(2)}%"></div>`;
@@ -71,18 +71,19 @@ function headLogo(theme) { return ""; } // Logo steht im hellen Layout in der Ko
 
 function renderTitleSlideLight(slide, theme, meta, stepCount, chips) {
   // Kennzahlen unter dem Titel: Schritte, Dauer, Version
-  const dauerZahl = meta.dauer ? meta.dauer.replace(/\s*Minuten?$/i, "") : "";
+  // "20 Minuten" / "20 minutes" -> große Zahl 20 mit Beschriftung "Minuten"
+  const dauerMatch = meta.dauer ? meta.dauer.match(/^(\d+(?:[.,]\d+)?)\s*\D*$/) : null;
   const kpis = [
-    [stepCount, "Arbeitsschritte"],
-    ...(meta.dauer ? [[dauerZahl, /Minute/i.test(meta.dauer) ? "Minuten" : "Dauer"]] : []),
-    ...(meta.version ? [[meta.version, "Version"]] : [])
+    [stepCount, L.steps],
+    ...(meta.dauer ? [dauerMatch ? [dauerMatch[1], L.minutes] : [meta.dauer, L.duration]] : []),
+    ...(meta.version ? [[meta.version, L.version]] : [])
   ].map(([v, l]) => `<div class="tl-kpi"><b>${escapeHtml(v)}</b><span>${l}</span></div>`).join("");
 
   return `
     <section class="${slideClass(theme, "t-light")}" style="${themeStyle(theme)}">
       <div class="tl-logo-area"><div class="tl-logo">${theme.logo}</div></div>
       <div class="tl-main">
-        <div class="s-kicker">Schulungsunterlage${meta.bereich ? " · " + escapeHtml(meta.bereich) : ""}</div>
+        <div class="s-kicker">${L.material}${meta.bereich ? " · " + escapeHtml(meta.bereich) : ""}</div>
         <h1>${inline(slide.title)}</h1>
         ${meta.untertitel ? `<p class="t-sub">${inline(meta.untertitel)}</p>` : ""}
         ${renderItems(slide.items)}
@@ -95,13 +96,13 @@ function renderTitleSlideLight(slide, theme, meta, stepCount, chips) {
 
 function renderTitleSlide(slide, theme, meta, stepCount) {
   if (isLight(theme)) {
-    const lightChips = [["Erstellt von", meta.autor]].filter(([, v]) => v)
+    const lightChips = [[L.author, meta.autor]].filter(([, v]) => v)
       .map(([k, v]) => `<span class="t-chip"><i>${k}</i>${escapeHtml(v)}</span>`).join("");
     return renderTitleSlideLight(slide, theme, meta, stepCount, lightChips);
   }
   const chips = [
-    ["Bereich", meta.bereich], ["Dauer", meta.dauer],
-    ["Version", meta.version], ["Erstellt von", meta.autor]
+    [L.area, meta.bereich], [L.duration, meta.dauer],
+    [L.version, meta.version], [L.author, meta.autor]
   ].filter(([, v]) => v)
    .map(([k, v]) => `<span class="t-chip"><i>${k}</i>${escapeHtml(v)}</span>`).join("");
 
@@ -110,9 +111,9 @@ function renderTitleSlide(slide, theme, meta, stepCount) {
       <div class="t-band">
         <div class="s-logo">${theme.logo}</div>
         <div>
-          <div class="t-label">Schulungsunterlage</div>
+          <div class="t-label">${L.material}</div>
         </div>
-        <div class="t-steps">${stepCount}<span>Arbeitsschritte</span></div>
+        <div class="t-steps">${stepCount}<span>${L.steps}</span></div>
       </div>
       <div class="t-main">
         <h1>${inline(slide.title)}</h1>
@@ -181,12 +182,12 @@ function renderContentSlide(slide, theme, meta, index, total) {
       <div class="s-head">
         ${isStep ? `<div class="s-badge">${slide.stepNumber}</div>` : ""}
         <div>
-          <div class="s-kicker">${isStep ? `Schritt ${slide.stepNumber} von ${meta.stepCount}` : escapeHtml(meta.trainingTitle || "")}</div>
+          <div class="s-kicker">${isStep ? stepText(slide.stepNumber, meta.stepCount) : escapeHtml(meta.trainingTitle || "")}</div>
           <h2 class="s-title">${inline(slide.title)}</h2>
         </div>
         ${headLogo(theme)}
       </div>`;
-  const foot = footer(theme, meta, index, total, isStep ? `Schritt ${slide.stepNumber} von ${meta.stepCount}` : "");
+  const foot = footer(theme, meta, index, total, isStep ? stepText(slide.stepNumber, meta.stepCount) : "");
 
   // Mit App-Bildschirm: Text links, gezeichnetes Handy rechts
   if (slide.screen) {
@@ -217,13 +218,13 @@ function renderContentSlide(slide, theme, meta, index, total) {
       <div class="s-head">
         ${isStep ? `<div class="s-badge">${slide.stepNumber}</div>` : ""}
         <div>
-          <div class="s-kicker">${isStep ? `Schritt ${slide.stepNumber} von ${meta.stepCount}` : escapeHtml(meta.trainingTitle || "")}</div>
+          <div class="s-kicker">${isStep ? stepText(slide.stepNumber, meta.stepCount) : escapeHtml(meta.trainingTitle || "")}</div>
           <h2 class="s-title">${inline(slide.title)}</h2>
         </div>
         ${headLogo(theme)}
       </div>
       ${body}
-      ${footer(theme, meta, index, total, isStep ? `Schritt ${slide.stepNumber} von ${meta.stepCount}` : "")}
+      ${footer(theme, meta, index, total, isStep ? stepText(slide.stepNumber, meta.stepCount) : "")}
     </section>`;
 }
 
@@ -238,8 +239,8 @@ function renderQuizSlide(slide, theme, meta, index, total) {
     <section class="${slideClass(theme)}" style="${themeStyle(theme)}">
       <div class="s-head">
         <div>
-          <div class="s-kicker">${escapeHtml(meta.trainingTitle || "Wissenscheck")}</div>
-          <h2 class="s-title">${inline(slide.title || "Wissenscheck")}</h2>
+          <div class="s-kicker">${escapeHtml(meta.trainingTitle || L.quiz)}</div>
+          <h2 class="s-title">${inline(slide.title || L.quiz)}</h2>
         </div>
         ${headLogo(theme)}
       </div>
@@ -260,21 +261,21 @@ function renderEndSlide(parsed, theme, meta, index, total, qrSvg) {
     <section class="${slideClass(theme)}" style="${themeStyle(theme)}">
       <div class="s-head">
         <div>
-          <div class="s-kicker">Zusammenfassung</div>
-          <h2 class="s-title">Schulung abgeschlossen</h2>
+          <div class="s-kicker">${L.summary}</div>
+          <h2 class="s-title">${L.done}</h2>
         </div>
         ${headLogo(theme)}
       </div>
       <div class="e-grid${qrSvg ? "" : " no-qr"}">
         <div>
-          <p class="s-p">Sie haben alle Inhalte zu <strong>${escapeHtml(meta.trainingTitle || "dieser Schulung")}</strong> durchgearbeitet. Bei Fragen wenden Sie sich an Ihre Teamleitung.</p>
+          <p class="s-p">${escapeHtml(L.doneText).replace("{t}", `<strong>${escapeHtml(meta.trainingTitle || "")}</strong>`)}</p>
           <div class="e-stats">
-            <div class="e-stat"><b>${parsed.stepCount}</b><span>Arbeitsschritte</span></div>
-            <div class="e-stat"><b>${warnCount}</b><span>Sicherheitshinweise</span></div>
-            <div class="e-stat"><b>${quizCount}</b><span>Wissensfragen</span></div>
+            <div class="e-stat"><b>${parsed.stepCount}</b><span>${L.steps}</span></div>
+            <div class="e-stat"><b>${warnCount}</b><span>${L.warnings}</span></div>
+            <div class="e-stat"><b>${quizCount}</b><span>${L.questions}</span></div>
           </div>
         </div>
-        ${qrSvg ? `<div class="e-qr">${qrSvg}<span>Schulung am Arbeitsplatz aufrufen</span></div>` : ""}
+        ${qrSvg ? `<div class="e-qr">${qrSvg}<span>${L.qr}</span></div>` : ""}
       </div>
       ${footer(theme, meta, index, total)}
     </section>`;
@@ -291,6 +292,7 @@ function makeQr(text) {
 
 // Baut die komplette Präsentation: Liste von HTML-Strings (eine pro Folie)
 function buildDeck(parsed, theme, qrLink) {
+  useLabels(parsed.meta.sprache);
   const titleSlide = parsed.slides.find(s => s.type === "title");
   const meta = {
     ...parsed.meta,

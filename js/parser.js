@@ -18,7 +18,7 @@
 //   sonstiger Text      normaler Absatz
 // ---------------------------------------------------------------
 
-const META_KEYS = ["untertitel", "bereich", "dauer", "version", "autor", "link"];
+const META_KEYS = ["untertitel", "bereich", "dauer", "version", "autor", "link", "sprache"];
 
 function parseTraining(source) {
   const blocks = source.replace(/\r/g, "").split(/^\s*---\s*$/m);

@@ -23,6 +23,10 @@
       <select id="theme-select" aria-label="Corporate Design wählen"></select>
     </label>
     <button type="button" class="btn" id="btn-design">Design anpassen</button>
+    <label class="field-inline">
+      <span>Sprache</span>
+      <select id="lang-select" aria-label="Sprache der Schulung wählen"></select>
+    </label>
     <button type="button" class="btn btn-ai" id="btn-ai">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 17l.8 2.2L22 20l-2.2.8L19 23l-.8-2.2L16 20l2.2-.8z"/></svg>
       Mit KI erstellen
@@ -94,10 +98,23 @@
 <dialog class="dialog" id="ai-dialog">
   <form method="dialog" id="ai-form">
     <h2>Schulung mit KI erstellen</h2>
-    <p class="muted">Fügen Sie eine Arbeitsanweisung, Notizen oder einen Prozessablauf ein. Gemini erstellt daraus eine strukturierte Schulung mit Schritten, Sicherheitshinweisen und Wissensfragen.</p>
+    <p class="muted">Laden Sie eine bestehende Arbeitsanweisung hoch (Foto, Scan oder PDF) oder fügen Sie einen Text ein. Gemini erstellt daraus eine strukturierte Schulung mit Schritten, Sicherheitshinweisen und Wissensfragen.</p>
+
+    <div class="drop" id="ai-drop">
+      <input type="file" id="ai-file" accept="image/png,image/jpeg,image/webp,image/heic,application/pdf" hidden>
+      <div class="drop-empty" id="ai-drop-empty">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+        <div><b>Arbeitsanweisung hochladen</b><span>Foto, Scan oder PDF hierher ziehen oder <button type="button" class="link-btn" id="ai-file-pick">Datei auswählen</button></span></div>
+      </div>
+      <div class="drop-file" id="ai-drop-file" hidden>
+        <div class="drop-thumb" id="ai-thumb"></div>
+        <div class="drop-info"><b id="ai-file-name"></b><span id="ai-file-meta"></span></div>
+        <button type="button" class="link-btn" id="ai-file-remove">Entfernen</button>
+      </div>
+    </div>
 
     <label class="field">
-      <span>Rohtext</span>
+      <span id="ai-text-label">Rohtext</span>
       <textarea id="ai-text" rows="9" placeholder="z. B.: Erst Handschuhe anziehen. Dann Stecker vom Fensterheber einstecken bis er klickt..."></textarea>
     </label>
 
@@ -187,6 +204,7 @@
 <div id="print-root" aria-hidden="true"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="js/i18n.js"></script>
 <script src="js/themes.js"></script>
 <script src="js/slide-styles.js"></script>
 <script src="js/parser.js"></script>
@@ -196,5 +214,7 @@
 <script src="js/sample.js"></script>
 <script src="js/app.js"></script>
 <script src="js/design-editor.js"></script>
+<script src="js/upload.js"></script>
+<script src="js/translate.js"></script>
 </body>
 </html>

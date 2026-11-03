@@ -114,3 +114,23 @@ input[type="file"] { font: inherit; font-weight: 400; }
   .editor-pane { max-width: none; border-right: 0; border-bottom: 1px solid var(--ui-line); }
   #editor { min-height: 260px; }
 }
+
+/* Upload-Fläche im KI-Dialog */
+.drop { border: 1.5px dashed #B9BEC7; border-radius: 10px; background: #FAFBFC; padding: 16px; transition: background .15s, border-color .15s; }
+.drop.is-over { border-color: var(--ui-ai); background: #F3F0FC; }
+.drop-empty { display: flex; align-items: center; gap: 14px; color: var(--ui-muted); }
+.drop-empty svg { flex: none; color: var(--ui-ai); }
+.drop-empty b, .drop-info b { display: block; color: var(--ui-text); }
+.drop-empty .link-btn { padding: 0; }
+.drop-file { display: flex; align-items: center; gap: 14px; }
+.drop-thumb { width: 56px; height: 56px; flex: none; border-radius: 6px; overflow: hidden; background: #EEF0F3; display: flex; align-items: center; justify-content: center; }
+.drop-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.drop-pdf { font-weight: 700; font-size: 13px; color: #B3261E; }
+.drop-info { flex: 1; min-width: 0; color: var(--ui-muted); }
+.drop-info b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Meldungen im Präsentationsmodus oben statt über den Buttons */
+.present:not([hidden]) ~ .toast { bottom: auto; top: 24px; }
+.drop [hidden] { display: none !important; }
+.pane-actions .link-btn { white-space: nowrap; }
+.pane-actions { flex-wrap: wrap; justify-content: flex-end; }

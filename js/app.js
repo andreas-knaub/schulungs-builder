@@ -139,7 +139,7 @@ function exportPdf() {
 
 function exportHtml() {
   if (deck.html.length === 0) return;
-  const html = buildStandaloneHtml(deck.html, deck.meta.trainingTitle);
+  const html = buildStandaloneHtml(deck.html, deck.meta.trainingTitle, deck.meta.sprache || "de");
   downloadFile(`${slugify(deck.meta.trainingTitle)}.html`, html, "text/html");
   showToast("HTML-Datei wurde heruntergeladen.");
 }
@@ -165,10 +165,12 @@ async function runAi(e) {
 
   els.aiRun.disabled = true;
   els.aiStatus.classList.remove("error");
-  els.aiStatus.textContent = "Gemini erstellt die Schulung …";
+  const file = getUploadedFile();
+  els.aiStatus.textContent = file ? "Gemini liest die Arbeitsanweisung und erstellt die Schulung …" : "Gemini erstellt die Schulung …";
   try {
-    const result = await generateWithGemini({ apiKey, model, rawText: els.aiText.value });
+    const result = await generateWithGemini({ apiKey, model, rawText: els.aiText.value, file });
     undoSource = els.editor.value;
+    resetTranslation();
     els.editor.value = result;
     store.set(STORAGE.source, result);
     render();
@@ -195,6 +197,7 @@ function showToast(text, withUndo = false) {
 
 function setSource(text) {
   undoSource = els.editor.value;
+  resetTranslation();
   els.editor.value = text;
   store.set(STORAGE.source, text);
   render();

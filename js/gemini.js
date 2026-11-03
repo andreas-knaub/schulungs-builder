@@ -8,7 +8,7 @@
 // man die Anfrage über ein eigenes Backend leiten (siehe Roadmap).
 // ---------------------------------------------------------------
 
-function buildPrompt(rawText) {
+function buildPrompt(rawText, hasFile = false) {
   return `Du bist Experte für Schulungsunterlagen in der Produktion, sowohl für Arbeitsabläufe als auch für die Einführung neuer Software am Shopfloor.
 Erstelle aus dem folgenden Rohtext eine klare, praxisnahe Schulung für Mitarbeitende am Band.
 
@@ -58,27 +58,22 @@ button: <weiterer Button>
 - Beispielwerte (z. B. eine Fahrzeugnummer) dürfen erfunden sein, die Bedienschritte müssen zum Rohtext passen.
 - Bei reinen Handarbeitsschritten ohne Software lass die Bildschirm-Zeilen weg.
 
-Rohtext:
+${hasFile ? `Quelle: Die Arbeitsanweisung ist als Bild oder PDF angehängt (z. B. ein Foto einer Papier-Anweisung oder ein altes Dokument).
+Lies sie vollständig, auch Tabellen, Skizzen, Nummerierungen, Drehmomente und Warnhinweise, und nutze sie als Rohtext.
+${rawText.trim() ? `Zusätzliche Hinweise des Erstellers:\n"""\n${rawText}\n"""` : ""}` : `Rohtext:
 """
 ${rawText}
-"""`;
+"""`}`;
 }
 
-async function generateWithGemini({ apiKey, model, rawText }) {
+// Eine Anfrage an Gemini senden und den Text der Antwort zurückgeben
+async function callGemini({ apiKey, model, parts, temperature = 0.4 }) {
   if (!apiKey) throw new Error("Bitte einen Gemini API-Key eingeben.");
-  if (!rawText.trim()) throw new Error("Bitte einen Rohtext eingeben.");
-
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
   const response = await fetch(url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-goog-api-key": apiKey
-    },
-    body: JSON.stringify({
-      contents: [{ role: "user", parts: [{ text: buildPrompt(rawText) }] }],
-      generationConfig: { temperature: 0.4 }
-    })
+    headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+    body: JSON.stringify({ contents: [{ role: "user", parts }], generationConfig: { temperature } })
   });
 
   if (!response.ok) {
@@ -93,4 +88,34 @@ async function generateWithGemini({ apiKey, model, rawText }) {
   text = text.replace(/^```[a-z]*\s*/i, "").replace(/```\s*$/, "").trim();
   if (!text) throw new Error("Die KI hat keinen Text zurückgegeben.");
   return text;
+}
+
+// Schulung aus Rohtext und/oder Datei (Foto, Scan, PDF) erstellen
+async function generateWithGemini({ apiKey, model, rawText, file }) {
+  if (!file && !rawText.trim()) throw new Error("Bitte einen Rohtext eingeben oder eine Datei hochladen.");
+  const parts = [];
+  if (file) parts.push({ inline_data: { mime_type: file.mimeType, data: file.base64 } });
+  parts.push({ text: buildPrompt(rawText, Boolean(file)) });
+  return callGemini({ apiKey, model, parts });
+}
+
+// Fertige Schulung in eine andere Sprache übersetzen, das Format bleibt erhalten
+async function translateWithGemini({ apiKey, model, source, languageName }) {
+  const prompt = `Übersetze die folgende Schulung vollständig ins ${languageName}.
+
+Wichtige Regeln:
+- Behalte das Format exakt bei: jede Zeile bleibt eine Zeile, Trennlinien --- bleiben stehen.
+- Übersetze NICHT die Steuerzeichen und Schlüsselwörter am Zeilenanfang: #, ##, "## Schritt:", -, !, >, ?, [x], [ ], sowie
+  untertitel:, bereich:, dauer:, version:, autor:, link:, sprache:, bild:, handy:, feld:, liste:, auswahl:, foto:, hinweis-app:, button:, button!:
+- Übersetze den Text NACH diesen Schlüsselwörtern. Trennzeichen | und das Markierungszeichen * bleiben an ihrer Stelle.
+- "## Schritt:" bleibt wörtlich so stehen, nur der Titel danach wird übersetzt.
+- Zahlen, Einheiten (Nm, mm), Teilenummern, Fahrzeugnummern, Namen und Software-Namen bleiben unverändert.
+- Verwende einfache, klare Sprache für Mitarbeitende in der Produktion.
+- Antworte nur mit der übersetzten Schulung, ohne Erklärungen und ohne Code-Block.
+
+Schulung:
+"""
+${source}
+"""`;
+  return callGemini({ apiKey, model, parts: [{ text: prompt }], temperature: 0.2 });
 }
