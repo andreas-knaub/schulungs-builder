@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Schulungs-Builder</title>
+<title>Schulungsportal</title>
 <meta name="description" content="Erstellt aus einfachem Text automatisch Schulungsunterlagen im Corporate Design, mit KI-Unterstützung.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -12,12 +12,18 @@
 <body>
 
 <header class="topbar">
-  <div class="brand">
+  <a class="brand" href="#/start">
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
-    <span>Schulungs-Builder</span>
-  </div>
+    <span>Schulungsportal</span>
+  </a>
 
-  <div class="toolbar">
+  <nav class="mainnav" aria-label="Hauptnavigation">
+    <a href="#/start" data-nav="start">Start</a>
+    <a href="#/schulungen" data-nav="schulungen">Schulungsinhalte</a>
+    <a href="#/erstellen" data-nav="erstellen">Schulung erstellen</a>
+  </nav>
+
+  <div class="toolbar" id="builder-toolbar">
     <label class="field-inline">
       <span>Design</span>
       <select id="theme-select" aria-label="Corporate Design wählen"></select>
@@ -34,10 +40,57 @@
     <button type="button" class="btn" id="btn-present">Präsentieren</button>
     <button type="button" class="btn" id="btn-pdf">PDF</button>
     <button type="button" class="btn" id="btn-html">HTML exportieren</button>
+    <button type="button" class="btn btn-primary" id="btn-save-lib">In Bibliothek speichern</button>
   </div>
 </header>
 
-<main class="workspace">
+<!-- Startseite -->
+<section class="view portal" id="view-start" hidden>
+  <div class="start-band">
+    <h1>Welche Schulung suchen Sie?</h1>
+    <p>Station, Thema oder Software eingeben, oder Abteilung wählen.</p>
+    <form class="start-search" id="start-search-form" role="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input type="search" id="start-search" placeholder="z. B. T-04, Scheinwerfer oder QualiScan" aria-label="Schulung suchen" autocomplete="off">
+      <button type="submit" class="btn btn-start">Suchen</button>
+    </form>
+    <div class="start-hint">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3zM20 14v3M14 20h3M20 20h1"/></svg>
+      Oder QR-Code an Ihrer Station scannen
+    </div>
+  </div>
+  <div class="start-wrap">
+    <div class="start-deps" id="start-deps"></div>
+    <a class="start-create" href="#/erstellen">
+      <span class="start-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg></span>
+      <span class="start-create-text"><b>Schulung erstellen</b><span>Aus Text, Foto oder PDF mit KI, im Corporate Design</span></span>
+      <span class="btn btn-start">Neue Schulung →</span>
+    </a>
+  </div>
+</section>
+
+<!-- Schulungsinhalte -->
+<section class="view portal" id="view-library" hidden>
+  <div class="portal-inner">
+    <div class="lib-head">
+      <nav class="crumbs" id="lib-crumbs" aria-label="Pfad"></nav>
+      <div class="lib-tools">
+        <input type="search" id="lib-search" placeholder="Schulung suchen …" aria-label="Schulung suchen">
+        <label class="check"><input type="checkbox" id="lib-editor-mode"><span>Ersteller-Ansicht</span></label>
+      </div>
+    </div>
+    <div class="lib-title" id="lib-title"></div>
+    <div id="lib-content"></div>
+    <div class="lib-admin" id="lib-admin" hidden>
+      <button type="button" class="btn" id="lib-export">Bibliothek exportieren</button>
+      <button type="button" class="btn" id="lib-import">Bibliothek importieren</button>
+      <input type="file" id="lib-import-file" accept="application/json,.json" hidden>
+      <span class="muted">Die Bibliothek liegt in diesem Browser. Mit Export und Import überträgst du sie auf ein anderes Gerät.</span>
+    </div>
+  </div>
+</section>
+
+<main class="workspace view" id="view-builder" hidden>
   <section class="editor-pane" aria-label="Editor">
     <div class="pane-head">
       <h2>Inhalt</h2>
@@ -90,6 +143,7 @@
     <button type="button" id="p-prev" aria-label="Vorherige Folie">&#8592;</button>
     <span id="p-count"></span>
     <button type="button" id="p-next" aria-label="Nächste Folie">&#8594;</button>
+    <select id="p-lang" aria-label="Sprache" hidden></select>
     <button type="button" id="p-close" aria-label="Präsentation beenden">Beenden</button>
   </div>
 </div>
@@ -181,7 +235,7 @@
 
     <label class="check">
       <input type="checkbox" id="d-logo-white">
-      <span>Logo auf dem dunklen Titelband weiß darstellen</span>
+      <span>Logo auf dunklem Hintergrund weiß darstellen</span>
     </label>
 
     <p class="ai-status" id="d-status" role="status"></p>
@@ -192,6 +246,70 @@
       <button type="button" class="btn" id="d-cancel">Abbrechen</button>
       <button type="submit" class="btn btn-primary">Speichern</button>
     </div>
+  </form>
+</dialog>
+
+<!-- In Bibliothek speichern -->
+<dialog class="dialog" id="save-dialog">
+  <form method="dialog" id="save-form">
+    <h2 id="save-title">In Bibliothek speichern</h2>
+    <p class="muted" id="save-info"></p>
+
+    <div class="field-row">
+      <label class="field">
+        <span>Abteilung</span>
+        <select id="s-dep"></select>
+      </label>
+      <label class="field" id="s-dep-new-wrap" hidden>
+        <span>Name der neuen Abteilung</span>
+        <input type="text" id="s-dep-new" placeholder="z. B. Endmontage">
+      </label>
+    </div>
+
+    <div class="field-row">
+      <label class="field">
+        <span>Station</span>
+        <select id="s-station"></select>
+      </label>
+    </div>
+    <div class="field-row" id="s-station-new-wrap" hidden>
+      <label class="field">
+        <span>Stationskürzel</span>
+        <input type="text" id="s-station-code" placeholder="z. B. T-05">
+      </label>
+      <label class="field">
+        <span>Bezeichnung</span>
+        <input type="text" id="s-station-name" placeholder="z. B. Türgriff montieren">
+      </label>
+    </div>
+
+    <fieldset class="status-pick">
+      <legend>Status</legend>
+      <label><input type="radio" name="s-status" value="entwurf"><span><b>Entwurf</b> nur in der Ersteller-Ansicht sichtbar</span></label>
+      <label><input type="radio" name="s-status" value="freigegeben" checked><span><b>Freigegeben</b> für alle Mitarbeiter sichtbar</span></label>
+    </fieldset>
+
+    <label class="check" id="s-copy-wrap" hidden>
+      <input type="checkbox" id="s-copy">
+      <span>Als neue Schulung speichern (Original bleibt erhalten)</span>
+    </label>
+
+    <p class="ai-status" id="s-status-msg" role="status"></p>
+    <div class="dialog-actions">
+      <button type="button" class="btn" id="s-cancel">Abbrechen</button>
+      <button type="submit" class="btn btn-primary">Speichern</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- QR-Code einer Station -->
+<dialog class="dialog qr-dialog" id="qr-dialog">
+  <form method="dialog">
+    <h2 id="qr-title">QR-Code</h2>
+    <p class="muted">Ausdrucken und an der Station aufhängen. Der Code öffnet direkt die Schulungen dieser Station.</p>
+    <div class="qr-big" id="qr-big"></div>
+    <p class="qr-url" id="qr-url"></p>
+    <div class="dialog-actions"><button type="submit" class="btn btn-primary">Schließen</button></div>
   </form>
 </dialog>
 
@@ -216,5 +334,7 @@
 <script src="js/design-editor.js"></script>
 <script src="js/upload.js"></script>
 <script src="js/translate.js"></script>
+<script src="js/library.js"></script>
+<script src="js/portal.js"></script>
 </body>
 </html>

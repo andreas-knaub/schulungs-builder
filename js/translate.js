@@ -45,7 +45,7 @@ async function switchLanguage(code) {
   if (code === translation.originalLang) { showText(translation.original); translation.current = code; return; }
   if (translation.cache[code]) { showText(translation.cache[code]); translation.current = code; return; }
 
-  const apiKey = store.get(STORAGE.apiKey) || els.aiKey.value.trim();
+  const apiKey = store.get(STORAGE.apiKey) || window.sessionApiKey || els.aiKey.value.trim();
   if (!apiKey) {
     langSelect.value = translation.current;
     showToast("Für die Übersetzung wird ein Gemini API-Key benötigt.");

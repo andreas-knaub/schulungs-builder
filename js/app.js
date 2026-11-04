@@ -95,6 +95,7 @@ function openPresentation(index = 0) {
 function closePresentation() {
   els.present.hidden = true;
   if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  if (typeof onPresentationClosed === "function") onPresentationClosed();
 }
 
 function showPresentSlide(index) {
@@ -147,7 +148,7 @@ function exportHtml() {
 // ---------- KI-Assistent ----------
 
 function openAiDialog() {
-  els.aiKey.value = store.get(STORAGE.apiKey) || "";
+  els.aiKey.value = store.get(STORAGE.apiKey) || window.sessionApiKey || "";
   els.aiRemember.checked = Boolean(store.get(STORAGE.apiKey));
   els.aiModel.value = store.get(STORAGE.model) || els.aiModel.value;
   els.aiStatus.textContent = "";
@@ -161,6 +162,7 @@ async function runAi(e) {
   const model = els.aiModel.value.trim() || "gemini-2.5-flash";
 
   if (els.aiRemember.checked) store.set(STORAGE.apiKey, apiKey); else store.remove(STORAGE.apiKey);
+  window.sessionApiKey = apiKey; // für Übersetzungen in dieser Sitzung merken
   store.set(STORAGE.model, model);
 
   els.aiRun.disabled = true;

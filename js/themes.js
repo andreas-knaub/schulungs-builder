@@ -27,28 +27,6 @@ const THEMES = [
     },
     logo: `<svg viewBox="0 0 250 40" xmlns="http://www.w3.org/2000/svg" aria-label="Ihr Logo"><rect x="1" y="1" width="248" height="38" rx="4" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="6 5" opacity=".5"/><text x="125" y="26" text-anchor="middle" font-family="Barlow, Arial, sans-serif" font-size="16" font-weight="600" fill="currentColor" opacity=".6" letter-spacing="2">IHR LOGO</text></svg>`
   },
-  
-  {
-    id: "musterwerk",
-    name: "Musterwerk GmbH",
-    font: "'Barlow', 'Helvetica Neue', Arial, sans-serif",
-    colors: {
-      primary: "#0B2545",     // Hauptfarbe (Titelband, Badges)
-      accent: "#13A8C9",      // Akzent (Aufzählungspunkte, Fortschritt)
-      accentText: "#0B6E85",  // Akzent als lesbare Textfarbe
-      bg: "#FFFFFF",
-      surface: "#F3F6F9",
-      text: "#14202E",
-      mutedText: "#5A6878",
-      line: "#D5DDE5",
-      warnBg: "#FFF1DC",
-      warnText: "#7A4300",
-      tipBg: "#E3F4F8",
-      tipText: "#0B4F60"
-    },
-    // Logo als SVG, "currentColor" übernimmt die jeweilige Textfarbe
-    logo: `<svg viewBox="0 0 250 40" xmlns="http://www.w3.org/2000/svg" aria-label="Musterwerk"><rect x="0" y="4" width="32" height="32" rx="4" fill="none" stroke="currentColor" stroke-width="4"/><path d="M8 28V12l8 9 8-9v16" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><text x="44" y="29" font-family="Barlow, Arial, sans-serif" font-size="24" font-weight="700" fill="currentColor" letter-spacing="1">MUSTERWERK</text></svg>`
-  },
 ];
 
 // ---------------------------------------------------------------
