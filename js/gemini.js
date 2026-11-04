@@ -57,6 +57,7 @@ button: <weiterer Button>
 - Nutze pro Bildschirm 2 bis 5 Elemente und genau einen button!.
 - Beispielwerte (z. B. eine Fahrzeugnummer) dürfen erfunden sein, die Bedienschritte müssen zum Rohtext passen.
 - Bei reinen Handarbeitsschritten ohne Software lass die Bildschirm-Zeilen weg.
+- Schreibe bei feld: und liste: immer einen konkreten, realistischen Beispielwert (z. B. 5UX-48213 oder Tür vorne links), niemals Platzhalter wie [Symbol], <Wert> oder "Hier eingeben".
 
 ${hasFile ? `Quelle: Die Arbeitsanweisung ist als Bild oder PDF angehängt (z. B. ein Foto einer Papier-Anweisung oder ein altes Dokument).
 Lies sie vollständig, auch Tabellen, Skizzen, Nummerierungen, Drehmomente und Warnhinweise, und nutze sie als Rohtext.
