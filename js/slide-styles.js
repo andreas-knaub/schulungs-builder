@@ -161,4 +161,6 @@ const SLIDE_CSS = `
 .ph-btn-wrap.is-tap{border-color:#E8A33D}
 .ph-btn{background:var(--accent);color:#fff;border-radius:11px;text-align:center;padding:12px;font-size:16px;font-weight:700}
 .ph-btn-wrap:not(.is-tap) .ph-btn{background:#fff;color:var(--accent-text);border:1px solid #DADDE2}
+/* Logo auf dunkler Kopfleiste weiß darstellen (Haken im Design-Editor) */
+.layout-light.head-dark .l-logo img.logo-invert{filter:brightness(0) invert(1)}
 `;
