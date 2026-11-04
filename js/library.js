@@ -1,11 +1,14 @@
 // ---------------------------------------------------------------
-// Bibliothek: Abteilungen, Stationen und Schulungen.
+// Bibliothek: Bereiche → Abteilungen → Stationen → Schulungen.
+// Im Code heißt ein Bereich "department" (z. B. Lackiererei) und
+// eine Abteilung darin "unit" (z. B. Decklack).
 // Gespeichert im Browser (localStorage). Beim ersten Start wird sie
 // mit Beispielen gefüllt, damit sie nicht leer ist.
 // Im echten Einsatz käme dieselbe Struktur in eine zentrale Datenbank.
 // ---------------------------------------------------------------
 
-const LIBRARY_KEY = "sb.library.v1";
+const LIBRARY_KEY = "sb.library.v2";
+const LIBRARY_KEY_V1 = "sb.library.v1"; // alte Struktur ohne Abteilungen, wird übernommen
 
 // Symbole für die Abteilungskacheln
 const DEPARTMENT_ICONS = {
@@ -19,20 +22,50 @@ const DEPARTMENT_ICONS = {
 };
 
 const ALL_STATIONS = { id: "alle", code: "Alle Stationen", name: "Gilt für die ganze Abteilung" };
+const WHOLE_AREA = "alle"; // unit-Wert für Schulungen, die im ganzen Bereich gelten
+
+// Kurzschreibweise für die Beispieldaten: unit("id", "Name", ["CODE", "Bezeichnung"], ...)
+function seedUnit(id, name, ...stations) {
+  return { id, name, stations: [...stations.map(([code, sname]) => ({ id: code.toLowerCase(), code, name: sname })), { ...ALL_STATIONS }] };
+}
 
 const SEED_DEPARTMENTS = [
-  { id: "montage", name: "Montage", icon: "montage", stations: [
-    { id: "t-04", code: "T-04", name: "Türverkleidung" },
-    { id: "m-12", code: "M-12", name: "Frontscheinwerfer" }, ALL_STATIONS] },
-  { id: "karosserie", name: "Karosseriebau", icon: "karosserie", stations: [
-    { id: "k-07", code: "K-07", name: "Schweißzelle Seitenwand" }, ALL_STATIONS] },
-  { id: "lack", name: "Lackiererei", icon: "lack", stations: [
-    { id: "l-02", code: "L-02", name: "Sichtprüfung Decklack" }, ALL_STATIONS] },
-  { id: "logistik", name: "Logistik", icon: "logistik", stations: [
-    { id: "lg-2", code: "LG-2", name: "Routenzug Montage" }, ALL_STATIONS] },
-  { id: "qualitaet", name: "Qualität", icon: "qualitaet", stations: [
-    { id: "q-01", code: "Q-01", name: "Finish-Audit" }, ALL_STATIONS] },
-  { id: "instandhaltung", name: "Instandhaltung", icon: "instandhaltung", stations: [ALL_STATIONS] }
+  { id: "montage", name: "Montage", icon: "montage", units: [
+    seedUnit("tueren", "Türenvormontage", ["T-04", "Türverkleidung"], ["T-07", "Fensterheber"]),
+    seedUnit("innenausstattung", "Innenausstattung", ["I-03", "Cockpit einsetzen"], ["I-09", "Sitze montieren"]),
+    seedUnit("fahrwerk", "Fahrwerk und Hochzeit", ["F-01", "Hochzeit"], ["F-05", "Räder montieren"]),
+    seedUnit("frontend", "Frontend", ["M-12", "Frontscheinwerfer"], ["M-15", "Stoßfänger"]),
+    seedUnit("endmontage", "Endmontage und Inbetriebnahme", ["E-02", "Befüllung"], ["E-08", "Rollenprüfstand"])] },
+  { id: "karosserie", name: "Karosseriebau", icon: "karosserie", units: [
+    seedUnit("unterbau", "Unterbau", ["U-02", "Bodengruppe"], ["U-05", "Vorderwagen"]),
+    seedUnit("seitenwand", "Seitenwand", ["K-07", "Schweißzelle Seitenwand"], ["K-09", "Kleben Seitenwand"]),
+    seedUnit("aufbau", "Aufbau und Framing", ["A-01", "Framing-Station"], ["A-04", "Dach fügen"]),
+    seedUnit("anbauteile", "Anbauteile", ["AT-03", "Türen anbauen"], ["AT-06", "Klappen einstellen"]),
+    seedUnit("finish-karosserie", "Finish Karosserie", ["FK-01", "Messraum"], ["FK-04", "Finish-Linie"])] },
+  { id: "lack", name: "Lackiererei", icon: "lack", units: [
+    seedUnit("vorbehandlung", "Vorbehandlung und KTL", ["VK-01", "Tauchbecken"], ["VK-03", "KTL-Ofen"]),
+    seedUnit("nahtabdichtung", "Nahtabdichtung und UBS", ["NA-02", "Nahtabdichtung Roboter"], ["NA-05", "Unterbodenschutz"]),
+    seedUnit("fueller", "Füller", ["FL-01", "Füllerkabine"], ["FL-04", "Schleifen"]),
+    seedUnit("decklack", "Decklack", ["DL-01", "Basislack"], ["DL-03", "Klarlack"]),
+    seedUnit("finish-lack", "Finish und Prüfung", ["L-02", "Sichtprüfung Decklack"], ["L-06", "Spot-Repair"])] },
+  { id: "logistik", name: "Logistik", icon: "logistik", units: [
+    seedUnit("wareneingang", "Wareneingang", ["WE-1", "Entladung"], ["WE-3", "Eingangsbuchung"]),
+    seedUnit("lager", "Lager und Kommissionierung", ["LK-2", "Supermarkt"], ["LK-5", "Kleinteilelager"]),
+    seedUnit("intralogistik", "Intralogistik", ["LG-2", "Routenzug Montage"], ["LG-4", "Stapler"]),
+    seedUnit("sequenz", "Sequenzierung", ["SQ-1", "Sitze in Sequenz"], ["SQ-2", "Cockpit in Sequenz"]),
+    seedUnit("versand", "Versand", ["VS-1", "Fahrzeugübergabe"], ["VS-2", "Verladung"])] },
+  { id: "qualitaet", name: "Qualität", icon: "qualitaet", units: [
+    seedUnit("eingangspruefung", "Wareneingangsprüfung", ["QE-1", "Stichprobe"], ["QE-2", "Sperrlager"]),
+    seedUnit("messtechnik", "Messtechnik", ["QM-1", "Koordinatenmessung"], ["QM-3", "Spaltmaß"]),
+    seedUnit("audit", "Audit", ["Q-01", "Finish-Audit"], ["Q-04", "Produktaudit"]),
+    seedUnit("reklamation", "Reklamation", ["QR-1", "8D-Bericht"], ["QR-2", "Fehleranalyse"]),
+    seedUnit("pruefplanung", "Prüfplanung", ["QP-1", "Prüfplan erstellen"], ["QP-2", "Prüfmittel"])] },
+  { id: "instandhaltung", name: "Instandhaltung", icon: "instandhaltung", units: [
+    seedUnit("mechanik", "Mechanik", ["IM-1", "Getriebe"], ["IM-2", "Pneumatik"]),
+    seedUnit("elektrik", "Elektrik", ["IE-1", "Schaltschrank"], ["IE-3", "Sensorik"]),
+    seedUnit("robotik", "Robotik", ["IR-1", "Roboter teachen"], ["IR-2", "Werkzeugwechsel"]),
+    seedUnit("foerdertechnik", "Fördertechnik", ["IF-1", "Hängebahn"], ["IF-2", "Skidförderer"]),
+    seedUnit("anlagenbetreuung", "Anlagenbetreuung", ["IA-1", "Störungsannahme"], ["IA-2", "Wartungsplan"])] }
 ];
 
 const SEED_SOURCES = {
@@ -250,23 +283,55 @@ function libDate(daysAgo) {
 }
 
 function seedLibrary() {
-  const t = (id, department, station, status, source, daysAgo) =>
-    ({ id, department, station, status, source, themeId: "", translations: {}, updatedAt: libDate(daysAgo) });
+  const t = (id, department, unit, station, status, source, daysAgo) =>
+    ({ id, department, unit, station, status, source, themeId: "", translations: {}, updatedAt: libDate(daysAgo) });
   return {
-    version: 1,
+    version: 2,
     departments: JSON.parse(JSON.stringify(SEED_DEPARTMENTS)),
     trainings: [
-      t("tr-tuer", "montage", "t-04", "freigegeben", SAMPLE_TRAINING, 3),
-      t("tr-scheinwerfer", "montage", "m-12", "freigegeben", SEED_SOURCES.scheinwerfer, 1),
-      t("tr-qualiscan", "montage", "alle", "freigegeben", SAMPLE_SOFTWARE, 0),
-      t("tr-uebergabe", "montage", "alle", "freigegeben", SEED_SOURCES.schichtuebergabe, 5),
-      t("tr-unterweisung", "montage", "alle", "freigegeben", SEED_SOURCES.unterweisung, 12),
-      t("tr-schweiss", "karosserie", "k-07", "freigegeben", SEED_SOURCES.schweisszelle, 8),
-      t("tr-lack", "lack", "l-02", "freigegeben", SEED_SOURCES.lackpruefung, 20),
-      t("tr-routenzug", "logistik", "lg-2", "freigegeben", SEED_SOURCES.routenzug, 6),
-      t("tr-wartung", "instandhaltung", "alle", "entwurf", SEED_SOURCES.wartungsapp, 2)
+      t("tr-tuer", "montage", "tueren", "t-04", "freigegeben", SAMPLE_TRAINING, 3),
+      t("tr-scheinwerfer", "montage", "frontend", "m-12", "freigegeben", SEED_SOURCES.scheinwerfer, 1),
+      t("tr-qualiscan", "montage", "endmontage", "alle", "freigegeben", SAMPLE_SOFTWARE, 0),
+      t("tr-uebergabe", "montage", WHOLE_AREA, "alle", "freigegeben", SEED_SOURCES.schichtuebergabe, 5),
+      t("tr-unterweisung", "montage", WHOLE_AREA, "alle", "freigegeben", SEED_SOURCES.unterweisung, 12),
+      t("tr-schweiss", "karosserie", "seitenwand", "k-07", "freigegeben", SEED_SOURCES.schweisszelle, 8),
+      t("tr-lack", "lack", "finish-lack", "l-02", "freigegeben", SEED_SOURCES.lackpruefung, 20),
+      t("tr-routenzug", "logistik", "intralogistik", "lg-2", "freigegeben", SEED_SOURCES.routenzug, 6),
+      t("tr-wartung", "instandhaltung", "anlagenbetreuung", "alle", "entwurf", SEED_SOURCES.wartungsapp, 2)
     ]
   };
+}
+
+// Alte Bibliothek (Bereich → Station) in die neue Struktur übernehmen.
+// Stationen, die es in den Beispieldaten gibt, landen in ihrer Abteilung,
+// alle anderen in der Abteilung "Weitere Stationen". Nichts geht verloren.
+function upgradeLibrary(old, base) {
+  const lib = base || { version: 2, departments: JSON.parse(JSON.stringify(SEED_DEPARTMENTS)), trainings: [] };
+  const unitOf = {}; // "dep/station" → unit
+  (old.departments || []).forEach(od => {
+    let dep = lib.departments.find(d => d.id === od.id);
+    if (!dep) { dep = { id: od.id, name: od.name, icon: od.icon || "standard", units: [] }; lib.departments.push(dep); }
+    (od.stations || []).forEach(s => {
+      if (s.id === "alle") return;
+      const known = dep.units.find(u => u.stations.some(x => x.id === s.id));
+      if (known) { unitOf[`${od.id}/${s.id}`] = known.id; return; }
+      let extra = dep.units.find(u => u.id === "weitere");
+      if (!extra) { extra = { id: "weitere", name: "Weitere Stationen", stations: [{ ...ALL_STATIONS }] }; dep.units.push(extra); }
+      extra.stations.splice(extra.stations.length - 1, 0, s);
+      unitOf[`${od.id}/${s.id}`] = "weitere";
+    });
+  });
+  (old.trainings || []).forEach(t => {
+    const unit = t.unit || (t.station === "alle" ? WHOLE_AREA : unitOf[`${t.department}/${t.station}`] || WHOLE_AREA);
+    const record = { ...t, unit, station: unit === WHOLE_AREA ? "alle" : t.station };
+    const i = lib.trainings.findIndex(x => x.id === t.id);
+    if (i >= 0) lib.trainings[i] = record; else lib.trainings.push(record);
+  });
+  return lib;
+}
+
+function isOldLibrary(data) {
+  return data.departments.some(d => Array.isArray(d.stations) && !Array.isArray(d.units));
 }
 
 function loadLibrary() {
@@ -274,9 +339,13 @@ function loadLibrary() {
     const data = JSON.parse(localStorage.getItem(LIBRARY_KEY));
     if (data && Array.isArray(data.departments) && Array.isArray(data.trainings)) return data;
   } catch (e) { /* ignorieren */ }
-  const seeded = seedLibrary();
-  saveLibrary(seeded);
-  return seeded;
+  let lib = seedLibrary();
+  try {
+    const old = JSON.parse(localStorage.getItem(LIBRARY_KEY_V1));
+    if (old && Array.isArray(old.departments) && Array.isArray(old.trainings)) lib = upgradeLibrary(old, lib);
+  } catch (e) { /* ignorieren */ }
+  saveLibrary(lib);
+  return lib;
 }
 
 function saveLibrary(lib) {
@@ -295,7 +364,9 @@ function slugId(text) {
 }
 
 function findDepartment(id) { return library.departments.find(d => d.id === id); }
-function findStation(dep, id) { return dep ? dep.stations.find(s => s.id === id) : null; }
+function findUnit(dep, id) { return dep ? dep.units.find(u => u.id === id) : null; }
+function findStation(unit, id) { return unit ? unit.stations.find(s => s.id === id) : null; }
+function stationCount(dep) { return dep.units.reduce((n, u) => n + u.stations.filter(s => s.id !== "alle").length, 0); }
 function findTraining(id) { return library.trainings.find(t => t.id === id); }
 
 // Kurzinfos einer Schulung aus ihrem Text lesen

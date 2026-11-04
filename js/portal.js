@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------
-// Portal: Startseite, Schulungsinhalte (Abteilung → Station →
-// Schulungen) und Speichern in die Bibliothek.
+// Portal: Startseite, Schulungsinhalte (Bereich → Abteilung →
+// Station → Schulungen) und Speichern in die Bibliothek.
 // Die Navigation läuft über die Adresse (#/start, #/schulungen/...),
 // damit der QR-Code einer Station direkt auf deren Seite zeigen kann.
 // ---------------------------------------------------------------
@@ -21,6 +21,7 @@ const pv = {
   search: p$("lib-search"), editorMode: p$("lib-editor-mode"), admin: p$("lib-admin"),
   pLang: p$("p-lang"),
   saveDialog: p$("save-dialog"), saveForm: p$("save-form"), saveTitle: p$("save-title"), saveInfo: p$("save-info"),
+  sUnit: p$("s-unit"), sUnitNewWrap: p$("s-unit-new-wrap"), sUnitNew: p$("s-unit-new"), sStationWrap: p$("s-station-wrap"),
   sDep: p$("s-dep"), sDepNewWrap: p$("s-dep-new-wrap"), sDepNew: p$("s-dep-new"),
   sStation: p$("s-station"), sStationNewWrap: p$("s-station-new-wrap"),
   sStationCode: p$("s-station-code"), sStationName: p$("s-station-name"),
@@ -40,9 +41,23 @@ function visibleTrainings() {
   return portal.editorMode ? library.trainings : library.trainings.filter(t => t.status === "freigegeben");
 }
 
-function stationUrl(depId, stationId) {
+function libHref(...ids) {
+  return "#/schulungen" + ids.filter(Boolean).map(id => "/" + encodeURIComponent(id)).join("");
+}
+
+function stationUrl(depId, unitId, stationId) {
   if (!location.protocol.startsWith("http")) return "";
-  return `${location.origin}${location.pathname}#/schulungen/${encodeURIComponent(depId)}/${encodeURIComponent(stationId)}`;
+  const ids = unitId === WHOLE_AREA ? [depId] : [depId, unitId, stationId];
+  return `${location.origin}${location.pathname}${libHref(...ids)}`;
+}
+
+// "Lackiererei · Decklack · DL-01" für die Karten
+function locationLabel(t) {
+  const dep = findDepartment(t.department);
+  if (!dep) return "";
+  const unit = findUnit(dep, t.unit);
+  const st = findStation(unit, t.station);
+  return [dep.name, unit ? unit.name : "Ganzer Bereich", st && st.id !== "alle" ? st.code : ""].filter(Boolean).join(" · ");
 }
 
 function formatDate(iso) {
@@ -60,8 +75,7 @@ function applyPortalTheme() {
 
 function trainingCard(t, showLocation) {
   const info = trainingInfo(t);
-  const dep = findDepartment(t.department);
-  const st = findStation(dep, t.station);
+  const loc = locationLabel(t);
   const langs = info.languages.map(l => `<span>${l.toUpperCase()}</span>`).join("");
   const status = t.status === "freigegeben"
     ? (portal.editorMode ? `<span class="badge ok">Freigegeben</span>` : "")
@@ -70,7 +84,7 @@ function trainingCard(t, showLocation) {
   return `
     <article class="t-card">
       <div class="t-badges"><span class="badge">${info.type}</span>${status}</div>
-      ${showLocation && dep ? `<div class="t-loc">${escapeHtml(dep.name)}${st ? " · " + escapeHtml(st.code) : ""}</div>` : ""}
+      ${showLocation && loc ? `<div class="t-loc">${escapeHtml(loc)}</div>` : ""}
       <h3>${escapeHtml(info.title)}</h3>
       ${info.subtitle ? `<p>${escapeHtml(info.subtitle)}</p>` : ""}
       <div class="t-meta">
@@ -95,7 +109,7 @@ function renderStart() {
   applyPortalTheme();
   pv.startSearch.value = "";
   pv.startDeps.innerHTML = library.departments.map(d => `
-    <a class="start-dep" href="#/schulungen/${encodeURIComponent(d.id)}">
+    <a class="start-dep" href="${libHref(d.id)}">
       <span class="tile-icon">${DEPARTMENT_ICONS[d.icon] || DEPARTMENT_ICONS.standard}</span>
       <b>${escapeHtml(d.name)}</b>
     </a>`).join("");
@@ -109,18 +123,20 @@ function crumbs(items) {
     : `<span aria-current="page">${escapeHtml(it.label)}</span>`).join("");
 }
 
-function renderLibrary(depId, stationId) {
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+
+function renderLibrary(depId, unitId, stationId) {
   applyPortalTheme();
   pv.admin.hidden = !portal.editorMode;
   const query = pv.search.value.trim().toLowerCase();
   const vis = visibleTrainings();
-  const root = { label: "Schulungsinhalte", href: "#/schulungen" };
+  const root = { label: "Schulungsinhalte", href: libHref() };
 
-  // Suche über alle Abteilungen
+  // Suche über alle Bereiche
   if (query) {
-    const hits = vis.filter(t => t.source.toLowerCase().includes(query));
+    const hits = vis.filter(t => (t.source + " " + locationLabel(t)).toLowerCase().includes(query));
     crumbs([root, { label: "Suche" }]);
-    pv.title.innerHTML = `<div><h1>Suchergebnisse</h1><p>${hits.length} Schulung${hits.length === 1 ? "" : "en"} zu „${escapeHtml(pv.search.value.trim())}“</p></div>`;
+    pv.title.innerHTML = `<div><h1>Suchergebnisse</h1><p>${plural(hits.length, "Schulung", "Schulungen")} zu „${escapeHtml(pv.search.value.trim())}“</p></div>`;
     pv.content.innerHTML = hits.length
       ? `<div class="cards">${hits.map(t => trainingCard(t, true)).join("")}</div>`
       : `<div class="empty-state">Keine passende Schulung gefunden.</div>`;
@@ -129,53 +145,82 @@ function renderLibrary(depId, stationId) {
 
   const dep = findDepartment(depId);
 
-  // Ebene 1: Abteilungen
+  // Ebene 1: Bereiche
   if (!dep) {
     crumbs([root]);
-    pv.title.innerHTML = `<div><h1>Abteilung wählen</h1><p>Wählen Sie Ihre Abteilung, um die Schulungen Ihrer Station zu sehen.</p></div>`;
+    pv.title.innerHTML = `<div><h1>Bereich wählen</h1><p>Wählen Sie Ihren Bereich, dann Ihre Abteilung und Station.</p></div>`;
     pv.content.innerHTML = `<div class="tiles">${library.departments.map(d => {
       const count = vis.filter(t => t.department === d.id).length;
-      return `<a class="tile" href="#/schulungen/${encodeURIComponent(d.id)}">
+      return `<a class="tile" href="${libHref(d.id)}">
         <span class="tile-icon">${DEPARTMENT_ICONS[d.icon] || DEPARTMENT_ICONS.standard}</span>
         <b>${escapeHtml(d.name)}</b>
-        <span>${d.stations.length} Station${d.stations.length === 1 ? "" : "en"} · ${count} Schulung${count === 1 ? "" : "en"}</span>
+        <span>${plural(d.units.length, "Abteilung", "Abteilungen")} · ${plural(count, "Schulung", "Schulungen")}</span>
       </a>`;
     }).join("")}</div>`;
     return;
   }
 
-  const st = findStation(dep, stationId);
+  const unit = findUnit(dep, unitId);
 
-  // Ebene 2: Stationen einer Abteilung
-  if (!st) {
+  // Ebene 2: Abteilungen eines Bereichs (+ Schulungen für den ganzen Bereich)
+  if (!unit) {
     crumbs([root, { label: dep.name }]);
-    pv.title.innerHTML = `<div><h1>${escapeHtml(dep.name)}</h1><p>Wählen Sie Ihre Station.</p></div>`;
-    pv.content.innerHTML = `<div class="tiles">${dep.stations.map(s => {
-      const count = vis.filter(t => t.department === dep.id && t.station === s.id).length;
-      return `<a class="tile tile-station" href="#/schulungen/${encodeURIComponent(dep.id)}/${encodeURIComponent(s.id)}">
+    const icon = DEPARTMENT_ICONS[dep.icon] || DEPARTMENT_ICONS.standard;
+    const whole = vis.filter(t => t.department === dep.id && t.unit === WHOLE_AREA)
+      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+    const url = stationUrl(dep.id, WHOLE_AREA);
+    pv.title.innerHTML = `<div><h1>${escapeHtml(dep.name)}</h1><p>Wählen Sie Ihre Abteilung.</p></div>
+      ${url ? `<button type="button" class="btn" id="btn-station-qr">${SMALL_ICONS.qr}QR-Code für ${escapeHtml(dep.name)}</button>` : ""}`;
+    pv.content.innerHTML = `<div class="tiles">${dep.units.map(u => {
+      const count = vis.filter(t => t.department === dep.id && t.unit === u.id).length;
+      const stations = u.stations.filter(s => s.id !== "alle").length;
+      return `<a class="tile tile-unit" href="${libHref(dep.id, u.id)}">
+        <span class="tile-icon">${icon}</span>
+        <b>${escapeHtml(u.name)}</b>
+        <span>${plural(stations, "Station", "Stationen")} · ${plural(count, "Schulung", "Schulungen")}</span>
+      </a>`;
+    }).join("")}</div>
+    ${whole.length ? `<h2 class="lib-section">Für den ganzen Bereich ${escapeHtml(dep.name)}</h2>
+      <div class="cards">${whole.map(t => trainingCard(t, false)).join("")}</div>` : ""}`;
+    bindQr(`QR-Code ${dep.name}`, url);
+    return;
+  }
+
+  const st = findStation(unit, stationId);
+
+  // Ebene 3: Stationen einer Abteilung
+  if (!st) {
+    crumbs([root, { label: dep.name, href: libHref(dep.id) }, { label: unit.name }]);
+    pv.title.innerHTML = `<div><h1>${escapeHtml(unit.name)}</h1><p>${escapeHtml(dep.name)} · Wählen Sie Ihre Station.</p></div>`;
+    pv.content.innerHTML = `<div class="tiles">${unit.stations.map(s => {
+      const count = vis.filter(t => t.department === dep.id && t.unit === unit.id && t.station === s.id).length;
+      return `<a class="tile tile-station" href="${libHref(dep.id, unit.id, s.id)}">
         <span class="station-code">${escapeHtml(s.code)}</span>
         <b>${escapeHtml(s.name)}</b>
-        <span>${count} Schulung${count === 1 ? "" : "en"}</span>
+        <span>${plural(count, "Schulung", "Schulungen")}</span>
       </a>`;
     }).join("")}</div>`;
     return;
   }
 
-  // Ebene 3: Schulungen einer Station
-  crumbs([root, { label: dep.name, href: `#/schulungen/${encodeURIComponent(dep.id)}` }, { label: st.code }]);
-  const list = vis.filter(t => t.department === dep.id && t.station === st.id)
+  // Ebene 4: Schulungen einer Station
+  crumbs([root, { label: dep.name, href: libHref(dep.id) }, { label: unit.name, href: libHref(dep.id, unit.id) }, { label: st.code }]);
+  const list = vis.filter(t => t.department === dep.id && t.unit === unit.id && t.station === st.id)
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
-  const url = stationUrl(dep.id, st.id);
+  const url = stationUrl(dep.id, unit.id, st.id);
   pv.title.innerHTML = `
-    <div><h1>${escapeHtml(st.code)}${st.id !== "alle" ? " · " + escapeHtml(st.name) : ""}</h1><p>${escapeHtml(dep.name)}${st.id === "alle" ? " · " + escapeHtml(st.name) : ""}</p></div>
+    <div><h1>${escapeHtml(st.code)}${st.id !== "alle" ? " · " + escapeHtml(st.name) : ""}</h1><p>${escapeHtml(dep.name)} · ${escapeHtml(unit.name)}${st.id === "alle" ? " · " + escapeHtml(st.name) : ""}</p></div>
     ${url ? `<button type="button" class="btn" id="btn-station-qr">${SMALL_ICONS.qr}QR-Code für diese Station</button>` : ""}`;
   pv.content.innerHTML = list.length
     ? `<div class="cards">${list.map(t => trainingCard(t, false)).join("")}</div>`
     : `<div class="empty-state">Für diese Station gibt es noch keine Schulungen.${portal.editorMode ? ` <a href="#/erstellen">Jetzt eine erstellen</a>` : ""}</div>`;
+  bindQr(`QR-Code ${st.code}`, url);
+}
 
+function bindQr(title, url) {
   const qrBtn = p$("btn-station-qr");
   if (qrBtn) qrBtn.addEventListener("click", () => {
-    pv.qrTitle.textContent = `QR-Code ${st.code}`;
+    pv.qrTitle.textContent = title;
     pv.qrBig.innerHTML = makeQr(url) || `<p class="muted">QR-Code konnte nicht erzeugt werden.</p>`;
     pv.qrUrl.textContent = url;
     pv.qrDialog.showModal();
@@ -189,7 +234,7 @@ function buildPresentationDeck() {
   const lang = portal.presenting.lang;
   const source = (lang !== langOfSource(t.source) && t.translations[lang]) || t.source;
   const theme = getTheme(t.themeId || els.themeSelect.value);
-  deck = buildDeck(parseTraining(source), theme, stationUrl(t.department, t.station));
+  deck = buildDeck(parseTraining(source), theme, stationUrl(t.department, t.unit, t.station));
 }
 
 function presentTraining(id) {
@@ -246,9 +291,23 @@ function editTraining(id) {
 
 // ---------- In Bibliothek speichern ----------
 
-function fillStationSelect(depId, selected) {
+function fillUnitSelect(depId, selected) {
   const dep = findDepartment(depId);
-  const stations = dep ? dep.stations : [ALL_STATIONS];
+  const units = dep ? dep.units : [];
+  pv.sUnit.innerHTML = units.map(u => `<option value="${u.id}">${escapeHtml(u.name)}</option>`).join("")
+    + `<option value="${WHOLE_AREA}">Ganzer Bereich (alle Abteilungen)</option>`
+    + `<option value="__new">＋ Neue Abteilung …</option>`;
+  pv.sUnit.value = selected && (selected === WHOLE_AREA || units.some(u => u.id === selected)) ? selected
+    : (units[0] ? units[0].id : "__new");
+  pv.sUnitNewWrap.hidden = pv.sUnit.value !== "__new";
+  pv.sUnitNew.value = "";
+  fillStationSelect(depId, pv.sUnit.value, store.get("sb.lastStation"));
+}
+
+function fillStationSelect(depId, unitId, selected) {
+  const unit = findUnit(findDepartment(depId), unitId);
+  pv.sStationWrap.hidden = unitId === WHOLE_AREA;
+  const stations = unit ? unit.stations : [ALL_STATIONS];
   pv.sStation.innerHTML = stations.map(s =>
     `<option value="${s.id}">${escapeHtml(s.code)}${s.id !== "alle" ? " · " + escapeHtml(s.name) : ""}</option>`).join("")
     + `<option value="__new">＋ Neue Station …</option>`;
@@ -267,12 +326,13 @@ function openSaveDialog() {
     (Object.keys(translation.cache).length ? ` · ${Object.keys(translation.cache).length + 1} Sprachen` : "");
 
   pv.sDep.innerHTML = library.departments.map(d => `<option value="${d.id}">${escapeHtml(d.name)}</option>`).join("")
-    + `<option value="__new">＋ Neue Abteilung …</option>`;
+    + `<option value="__new">＋ Neuer Bereich …</option>`;
   const depId = editing ? editing.department : (store.get("sb.lastDep") || library.departments[0].id);
   pv.sDep.value = findDepartment(depId) ? depId : library.departments[0].id;
   pv.sDepNewWrap.hidden = true;
   pv.sDepNew.value = "";
-  fillStationSelect(pv.sDep.value, editing ? editing.station : store.get("sb.lastStation"));
+  fillUnitSelect(pv.sDep.value, editing ? editing.unit : store.get("sb.lastUnit"));
+  if (editing) fillStationSelect(pv.sDep.value, pv.sUnit.value, editing.station);
   pv.sStationCode.value = "";
   pv.sStationName.value = "";
 
@@ -288,8 +348,15 @@ function openSaveDialog() {
 pv.sDep.addEventListener("change", () => {
   const isNew = pv.sDep.value === "__new";
   pv.sDepNewWrap.hidden = !isNew;
-  fillStationSelect(isNew ? null : pv.sDep.value);
+  fillUnitSelect(isNew ? null : pv.sDep.value);
   if (isNew) pv.sDepNew.focus();
+});
+
+pv.sUnit.addEventListener("change", () => {
+  const isNew = pv.sUnit.value === "__new";
+  pv.sUnitNewWrap.hidden = !isNew;
+  fillStationSelect(pv.sDep.value, pv.sUnit.value);
+  if (isNew) pv.sUnitNew.focus();
 });
 
 pv.sStation.addEventListener("change", () => {
@@ -301,33 +368,53 @@ pv.saveForm.addEventListener("submit", e => {
   e.preventDefault();
   const fail = text => { pv.sMsg.classList.add("error"); pv.sMsg.textContent = text; };
 
-  // Abteilung (bestehend oder neu)
+  // Bereich (bestehend oder neu)
   let dep = findDepartment(pv.sDep.value);
   if (pv.sDep.value === "__new") {
     const name = pv.sDepNew.value.trim();
-    if (!name) return fail("Bitte einen Namen für die neue Abteilung eingeben.");
+    if (!name) return fail("Bitte einen Namen für den neuen Bereich eingeben.");
+    if (pv.sUnit.value === "__new" && !pv.sUnitNew.value.trim()) return fail("Bitte einen Namen für die neue Abteilung eingeben.");
     let id = slugId(name);
     while (findDepartment(id)) id += "-2";
-    dep = { id, name, icon: "standard", stations: [{ ...ALL_STATIONS }] };
-    library.departments.push(dep);
+    dep = { id, name, icon: "standard", units: [] };
   }
 
-  // Station (bestehend oder neu)
-  let stationId = pv.sStation.value;
+  // Abteilung (bestehend, neu oder ganzer Bereich)
+  let unitId = pv.sUnit.value;
+  let unit = findUnit(dep, unitId);
+  let newUnit = null;
+  if (unitId === "__new") {
+    const name = pv.sUnitNew.value.trim();
+    if (!name) return fail("Bitte einen Namen für die neue Abteilung eingeben.");
+    let id = slugId(name);
+    while (findUnit(dep, id) || id === WHOLE_AREA) id += "-2";
+    unit = newUnit = { id, name, stations: [{ ...ALL_STATIONS }] };
+    unitId = id;
+  }
+
+  // Station (bestehend oder neu); beim ganzen Bereich immer "alle"
+  let stationId = unitId === WHOLE_AREA ? "alle" : pv.sStation.value;
+  let newStation = null;
   if (stationId === "__new") {
     const code = pv.sStationCode.value.trim();
     const name = pv.sStationName.value.trim();
     if (!code || !name) return fail("Bitte Kürzel und Bezeichnung der neuen Station eingeben.");
     let id = slugId(code);
-    while (findStation(dep, id)) id += "-2";
-    dep.stations.splice(Math.max(0, dep.stations.length - 1), 0, { id, code, name }); // vor "Alle Stationen"
+    while (findStation(unit, id)) id += "-2";
+    newStation = { id, code, name };
     stationId = id;
   }
+
+  // Erst jetzt, wenn alle Eingaben stimmen, Neues anlegen
+  if (!findDepartment(dep.id)) library.departments.push(dep);
+  if (newUnit) dep.units.push(newUnit);
+  if (newStation) unit.stations.splice(Math.max(0, unit.stations.length - 1), 0, newStation); // vor "Alle Stationen"
 
   const status = pv.saveForm.querySelector('input[name="s-status"]:checked').value;
   const record = {
     id: portal.currentTrainingId && !pv.sCopy.checked ? portal.currentTrainingId : newId("tr"),
     department: dep.id,
+    unit: unitId,
     station: stationId,
     status,
     source: translation.original !== null ? translation.original : els.editor.value,
@@ -342,10 +429,10 @@ pv.saveForm.addEventListener("submit", e => {
 
   portal.currentTrainingId = record.id;
   store.set("sb.lastDep", dep.id);
+  store.set("sb.lastUnit", unitId);
   store.set("sb.lastStation", stationId);
   pv.saveDialog.close();
-  const st = findStation(dep, stationId);
-  showToast(`Gespeichert in ${dep.name} · ${st.code}${status === "entwurf" ? " (Entwurf)" : ""}.`);
+  showToast(`Gespeichert in ${locationLabel(record)}${status === "entwurf" ? " (Entwurf)" : ""}.`);
 });
 
 p$("s-cancel").addEventListener("click", () => pv.saveDialog.close());
@@ -393,13 +480,19 @@ p$("lib-import-file").addEventListener("change", e => {
   const reader = new FileReader();
   reader.onload = () => {
     try {
-      const data = JSON.parse(reader.result);
+      let data = JSON.parse(reader.result);
       if (!Array.isArray(data.departments) || !Array.isArray(data.trainings)) throw new Error();
+      // Alte Exporte (ohne Abteilungen) werden in die neue Struktur übernommen
+      if (isOldLibrary(data)) data = upgradeLibrary(data, { version: 2, departments: JSON.parse(JSON.stringify(library.departments)), trainings: [] });
       // Zusammenführen: gleiche IDs werden aktualisiert, neue ergänzt
       data.departments.forEach(d => {
         const existing = findDepartment(d.id);
         if (!existing) { library.departments.push(d); return; }
-        d.stations.forEach(s => { if (!findStation(existing, s.id)) existing.stations.push(s); });
+        d.units.forEach(u => {
+          const eu = findUnit(existing, u.id);
+          if (!eu) { existing.units.push(u); return; }
+          u.stations.forEach(s => { if (!findStation(eu, s.id)) eu.stations.splice(eu.stations.length - 1, 0, s); });
+        });
       });
       data.trainings.forEach(t => {
         const i = library.trainings.findIndex(x => x.id === t.id);
@@ -429,7 +522,7 @@ function route() {
   document.querySelectorAll(".mainnav a").forEach(a => a.classList.toggle("active", a.dataset.nav === view));
 
   if (view === "start") renderStart();
-  if (view === "schulungen") renderLibrary(parts[1], parts[2]);
+  if (view === "schulungen") renderLibrary(parts[1], parts[2], parts[3]);
   if (view === "erstellen") requestAnimationFrame(fitPreview);
 }
 

@@ -48,7 +48,7 @@
 <section class="view portal" id="view-start" hidden>
   <div class="start-band">
     <h1>Welche Schulung suchen Sie?</h1>
-    <p>Station, Thema oder Software eingeben, oder Abteilung wählen.</p>
+    <p>Station, Thema oder Software eingeben, oder Bereich wählen.</p>
     <form class="start-search" id="start-search-form" role="search">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
       <input type="search" id="start-search" placeholder="z. B. T-04, Scheinwerfer oder QualiScan" aria-label="Schulung suchen" autocomplete="off">
@@ -257,16 +257,27 @@
 
     <div class="field-row">
       <label class="field">
-        <span>Abteilung</span>
+        <span>Bereich</span>
         <select id="s-dep"></select>
       </label>
       <label class="field" id="s-dep-new-wrap" hidden>
-        <span>Name der neuen Abteilung</span>
-        <input type="text" id="s-dep-new" placeholder="z. B. Endmontage">
+        <span>Name des neuen Bereichs</span>
+        <input type="text" id="s-dep-new" placeholder="z. B. Presswerk">
       </label>
     </div>
 
     <div class="field-row">
+      <label class="field">
+        <span>Abteilung</span>
+        <select id="s-unit"></select>
+      </label>
+      <label class="field" id="s-unit-new-wrap" hidden>
+        <span>Name der neuen Abteilung</span>
+        <input type="text" id="s-unit-new" placeholder="z. B. Decklack">
+      </label>
+    </div>
+
+    <div class="field-row" id="s-station-wrap">
       <label class="field">
         <span>Station</span>
         <select id="s-station"></select>
