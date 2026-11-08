@@ -393,7 +393,7 @@ function fitSlide(html) {
   }
   fitBox.innerHTML = html;
   const slide = fitBox.firstElementChild;
-  const targets = slide ? [...slide.querySelectorAll(".s-body, .tl-main, .e-grid")] : [];
+  const targets = slide ? [...slide.querySelectorAll(".s-body, .tl-main, .e-grid, .tr-mid")] : [];
   if (!targets.length) return html;
 
   const foot = slide.querySelector(".s-foot");
@@ -415,6 +415,76 @@ function fitSlide(html) {
   return out;
 }
 
+// ---------------------------------------------------------------
+// Layout "Seitenleiste": links eine dunkle Leiste mit Logo, großer
+// Schrittnummer und Fortschritt, rechts der Inhalt. Die Inhaltsfolien
+// werden normal gebaut und dann in diese Form umgebaut.
+// ---------------------------------------------------------------
+const RAIL_ICONS = {
+  info: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M8 7h7M8 11h7"/></svg>`,
+  quiz: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17h.01"/></svg>`,
+  done: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>`
+};
+
+function isRail(theme) { return theme.layout === "rail"; }
+
+function railHtml(theme, info) {
+  const dots = info.dots ? `<div class="r-dots">${Array.from({ length: info.dots.count }, (_, k) =>
+    `<i${k < info.dots.filled ? ` class="on"` : ""}></i>`).join("")}</div>` : "";
+  return `
+    <div class="r-rail">
+      <div class="r-logo">${theme.logo}</div>
+      <div>
+        <div class="r-big">${info.big}</div>
+        ${info.kicker ? `<div class="r-kicker">${escapeHtml(info.kicker)}</div>` : ""}
+        <div class="r-title">${escapeHtml(info.title || "")}</div>
+      </div>
+      <div>${dots}<div class="r-num">${escapeHtml(info.num)}</div></div>
+    </div>`;
+}
+
+function railify(html, theme, info) {
+  const tpl = document.createElement("template");
+  tpl.innerHTML = html.trim();
+  const sec = tpl.content.firstElementChild;
+  sec.querySelectorAll(".l-top, .s-progress, .s-foot, .s-badge").forEach(e => e.remove());
+  sec.classList.remove("head-dark");
+  sec.classList.add("layout-rail");
+  const main = document.createElement("div");
+  main.className = "r-main";
+  while (sec.firstChild) main.appendChild(sec.firstChild);
+  sec.insertAdjacentHTML("afterbegin", railHtml(theme, info));
+  sec.appendChild(main);
+  return sec.outerHTML;
+}
+
+function renderTitleSlideRail(slide, theme, meta, stepCount) {
+  const dauerMatch = meta.dauer ? meta.dauer.match(/^(\d+(?:[.,]\d+)?)\s*\D*$/) : null;
+  const kpis = [
+    [stepCount, L.steps],
+    ...(meta.dauer ? [dauerMatch ? [dauerMatch[1], L.minutes] : [meta.dauer, L.duration]] : []),
+    ...(meta.version ? [[meta.version, L.version]] : [])
+  ].map(([v, l]) => `<div class="tr-kpi"><b>${escapeHtml(v)}</b><span>${l}</span></div>`).join("");
+  return `
+    <section class="slide t-rail" style="${themeStyle(theme)}">
+      <div class="tr-ring"></div>
+      <div class="tr-top">
+        <div class="tr-logo">${theme.logo}</div>
+        <div class="s-kicker">${L.material}${meta.bereich ? " · " + escapeHtml(meta.bereich) : ""}</div>
+      </div>
+      <div class="tr-mid">
+        <h1${src(slide.titleLine)}>${inline(slide.title)}</h1>
+        ${meta.untertitel ? `<p class="t-sub"${src(meta.untertitelLine)}>${inline(meta.untertitel)}</p>` : ""}
+        ${renderItems(slide.items)}
+      </div>
+      <div class="tr-bottom">
+        <div class="tr-kpis">${kpis}</div>
+        ${meta.autor ? `<span class="t-chip"><i>${L.author}</i>${escapeHtml(meta.autor)}</span>` : ""}
+      </div>
+      <div class="tr-bar"></div>
+    </section>`;
+}
+
 // Baut die komplette Präsentation: Liste von HTML-Strings (eine pro Folie)
 function buildDeck(parsed, theme, qrLink) {
   useLabels(parsed.meta.sprache);
@@ -425,11 +495,34 @@ function buildDeck(parsed, theme, qrLink) {
     trainingTitle: titleSlide ? titleSlide.title : ""
   };
   const total = parsed.slides.length + 1; // + Abschlussfolie
+  const rail = isRail(theme);
+  // Im Seitenleisten-Layout werden die Folien erst im hellen Layout gebaut
+  const base = rail ? { ...theme, layout: "light", headerDark: false } : theme;
+
+  // Fortschritt für die Seitenleiste: wie viele Schritte bis zu dieser Folie
+  let stepsSoFar = 0;
+  const showDots = parsed.stepCount > 0 && parsed.stepCount <= 12;
+  const railInfo = (slide, i) => {
+    if (slide && slide.type === "step") stepsSoFar = slide.stepNumber;
+    const info = {
+      title: meta.trainingTitle,
+      num: `${L.slide} ${i + 1} / ${total}`,
+      dots: showDots ? { count: parsed.stepCount, filled: slide ? stepsSoFar : parsed.stepCount } : null
+    };
+    if (!slide) return { ...info, big: RAIL_ICONS.done, kicker: L.summary };
+    if (slide.type === "step") return { ...info, big: String(slide.stepNumber).padStart(2, "0"), kicker: stepText(slide.stepNumber, parsed.stepCount) };
+    if (slide.type === "quiz") return { ...info, big: RAIL_ICONS.quiz, kicker: L.quiz };
+    return { ...info, big: RAIL_ICONS.info, kicker: "" };
+  };
+
   const html = parsed.slides.map((slide, i) => {
-    if (slide.type === "title") return renderTitleSlide(slide, theme, meta, parsed.stepCount);
-    if (slide.type === "quiz") return renderQuizSlide(slide, theme, meta, i, total);
-    return renderContentSlide(slide, theme, meta, i, total);
+    if (slide.type === "title") {
+      return rail ? renderTitleSlideRail(slide, theme, meta, parsed.stepCount) : renderTitleSlide(slide, theme, meta, parsed.stepCount);
+    }
+    const out = slide.type === "quiz" ? renderQuizSlide(slide, base, meta, i, total) : renderContentSlide(slide, base, meta, i, total);
+    return rail ? railify(out, theme, railInfo(slide, i)) : out;
   });
-  html.push(renderEndSlide(parsed, theme, meta, total - 1, total, makeQr(meta.link || qrLink)));
+  const end = renderEndSlide(parsed, base, meta, total - 1, total, makeQr(meta.link || qrLink));
+  html.push(rail ? railify(end, theme, railInfo(null, total - 1)) : end);
   return { html: html.map(fitSlide), meta };
 }

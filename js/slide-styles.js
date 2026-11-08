@@ -193,4 +193,54 @@ const SLIDE_CSS = `
 .c-one .c-card{flex-direction:row;align-items:center;gap:20px;padding:22px 26px}
 .c-one .c-no{display:none}
 .c-one .c-card p{font-size:24px}
+
+/* Titelblatt bei dunkler Kopfleiste: nur die Logo-Fläche links dunkel */
+.t-light.head-dark .tl-logo-area{background:var(--primary)}
+.t-light.head-dark .tl-logo{color:#FFFFFF}
+.t-light.head-dark .tl-logo img{mix-blend-mode:normal}
+.t-light.head-dark .tl-logo img.logo-invert{filter:brightness(0) invert(1)}
+
+/* Layout "Seitenleiste" */
+.slide.layout-rail{flex-direction:row}
+.r-rail{width:300px;flex:none;background:var(--primary);color:#FFFFFF;display:flex;flex-direction:column;justify-content:space-between;padding:40px 36px}
+.r-logo{height:76px;display:flex;align-items:center;color:#FFFFFF}
+.r-logo svg,.r-logo img{height:100%;width:auto;max-width:100%;object-fit:contain;display:block;object-position:left center}
+.r-logo img.logo-invert,.tr-logo img.logo-invert{filter:brightness(0) invert(1)}
+.r-big{font-size:150px;font-weight:800;line-height:.85;letter-spacing:-4px;color:color-mix(in srgb,var(--accent) 85%,#FFFFFF)}
+.r-big svg{width:116px;height:116px;display:block}
+.r-kicker{margin-top:24px;font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:color-mix(in srgb,var(--accent) 40%,#FFFFFF)}
+.r-title{margin-top:8px;font-size:15px;line-height:1.4;color:rgba(255,255,255,.7)}
+.r-dots{display:flex;gap:6px}
+.r-dots i{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.14)}
+.r-dots i.on{background:color-mix(in srgb,var(--accent) 85%,#FFFFFF)}
+.r-num{margin-top:12px;font-size:13px;color:rgba(255,255,255,.5)}
+.r-main{flex:1;min-width:0;display:flex;flex-direction:column}
+.layout-rail .s-head{padding:52px 60px 0}
+.layout-rail .s-head .s-kicker,.layout-rail.c-step .s-head .s-kicker{display:none}
+.layout-rail .s-title,.layout-rail.c-slide .s-title{font-size:44px;font-weight:800;margin:0}
+.layout-rail .s-body,.layout-rail .c-body{padding:30px 60px 44px}
+.layout-rail .e-grid{padding:30px 60px 44px}
+.layout-rail .c-cards{gap:16px}
+.layout-rail .c-card p{font-size:21px}
+.layout-rail .has-phone .s-head,.layout-rail.has-phone .s-head{padding-right:24px}
+
+/* Titelfolie im Seitenleisten-Layout */
+.slide.t-rail{background:var(--primary);color:#FFFFFF;padding:64px 80px;display:flex;flex-direction:column;justify-content:space-between}
+.tr-ring{position:absolute;right:-160px;top:120px;width:620px;height:620px;border-radius:50%;border:90px solid color-mix(in srgb,var(--accent) 30%,var(--primary))}
+.tr-top,.tr-mid,.tr-bottom{position:relative}
+.tr-top{display:flex;justify-content:space-between;align-items:flex-start;gap:32px}
+.tr-logo{height:84px;display:flex;align-items:center;color:#FFFFFF}
+.tr-logo svg,.tr-logo img{height:100%;width:auto;max-width:420px;object-fit:contain;display:block}
+.t-rail .s-kicker{font-size:15px;letter-spacing:.16em;color:color-mix(in srgb,var(--accent) 40%,#FFFFFF);padding-top:8px}
+.tr-mid{max-width:960px;display:flex;flex-direction:column;gap:20px}
+.tr-mid h1{font-size:76px;line-height:1.02;margin:0;font-weight:800;color:#FFFFFF}
+.t-rail .t-sub{font-size:26px;color:rgba(255,255,255,.72)}
+.t-rail .s-p{color:rgba(255,255,255,.8)}
+.tr-bottom{display:flex;align-items:flex-end;justify-content:space-between;gap:32px}
+.tr-kpis{display:flex;gap:56px}
+.tr-kpi b{display:block;font-size:48px;line-height:1;font-weight:800;color:#FFFFFF}
+.tr-kpi span{font-size:16px;color:rgba(255,255,255,.55)}
+.t-rail .t-chip{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.16);color:#FFFFFF}
+.t-rail .t-chip i{color:rgba(255,255,255,.6)}
+.tr-bar{position:absolute;left:0;right:0;bottom:0;height:10px;background:linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 60%,#FFFFFF))}
 `;

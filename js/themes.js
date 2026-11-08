@@ -70,8 +70,9 @@ function buildCustomTheme(config) {
   return {
     id: CUSTOM_THEME_ID,
     name: config.name ? `${config.name} (eigenes Design)` : "Eigenes Design",
-    layout: config.layout === "dark" ? "dark" : "light",
-    headerDark: config.layout === "light-dark",
+    // Eigenes Design: "rail" = Seitenleiste, sonst dunkle Kopfleiste
+    layout: config.layout === "rail" ? "rail" : "light",
+    headerDark: config.layout !== "rail",
     font: config.font || THEMES[0].font,
     colors: {
       ...THEMES[0].colors,

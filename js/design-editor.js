@@ -68,7 +68,7 @@
     d.primary.value = backup ? backup.primary : "#16171A";
     d.accent.value = backup ? backup.accent : "#1C69D4";
     d.logoWhite.checked = backup ? Boolean(backup.logoWhite) : false;
-    d.layout.value = backup && backup.layout ? backup.layout : "light";
+    d.layout.value = backup && backup.layout === "rail" ? "rail" : "light-dark";
     d.logo.value = "";
     d.status.textContent = "";
     d.status.classList.remove("error");
