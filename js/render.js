@@ -173,8 +173,90 @@ function renderPhone(screen) {
     </div>`;
 }
 
+// ---------------------------------------------------------------
+// Karten-Layout: jeder Punkt wird eine Karte mit passendem Symbol,
+// Sicherheitshinweise und Tipps stehen als Leiste darunter.
+// Das Symbol wird anhand von Stichwörtern im Text ausgewählt.
+// ---------------------------------------------------------------
+const CARD_ICONS = [
+  [/brille|augen/i, `<circle cx="6.5" cy="13" r="3.5"/><circle cx="17.5" cy="13" r="3.5"/><path d="M10 13h4M3 13 2 9M21 13l1-4"/>`],
+  [/gehör|ohr|lärm/i, `<path d="M4 15a8 8 0 0 1 16 0"/><rect x="2.5" y="14" width="4" height="6" rx="1.5"/><rect x="17.5" y="14" width="4" height="6" rx="1.5"/>`],
+  [/handschuh|hand/i, `<path d="M7 11V5a1.5 1.5 0 0 1 3 0v5M10 10V3.5a1.5 1.5 0 0 1 3 0V10M13 10V4.5a1.5 1.5 0 0 1 3 0V11M16 11V7.5a1.5 1.5 0 0 1 3 0V14a7 7 0 0 1-7 7h-1a6 6 0 0 1-5-3l-2.5-4.5a1.5 1.5 0 0 1 2.5-1.6L7 13"/>`],
+  [/schuh|stiefel/i, `<path d="M4 6h5v7l9 2.5a2 2 0 0 1 2 2V19H4z"/><path d="M4 19h16"/>`],
+  [/psa|schutz|sicher/i, `<path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6z"/><path d="m9 12 2 2 4-4"/>`],
+  [/nm\b|drehmoment|schraub|schrauber|werkzeug|anzieh/i, `<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/>`],
+  [/mm\b|spalt|mess|lehre|abstand/i, `<path d="M3 17 17 3l4 4L7 21z"/><path d="m7 13 2 2M10 10l2 2M13 7l2 2"/>`],
+  [/prüf|kontroll|check|sichtprüf|i\.o\.|qualität/i, `<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5M8 11l2 2 4-4"/>`],
+  [/licht|lampe|leuchte|hell/i, `<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/>`],
+  [/reinig|tuch|sauber|staub/i, `<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>`],
+  [/polier|politur|pad|schleif/i, `<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>`],
+  [/stecker|kabel|elektr|strom/i, `<path d="M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0zM12 18v4"/>`],
+  [/terminal|buch|scan|system|app|tablet|eingeb|melde/i, `<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>`],
+  [/sekunde|minute|zeit|warte/i, `<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>`],
+  [/band|förder|karosse|fahrzeug/i, `<path d="M3 16v-3l2-5h10l4 5h2v3"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>`],
+  [/teil|clip|einsetz|montier|bauteil|material|behälter/i, `<path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/>`],
+  [/ziel|lernen|verstehen|kennen|wissen/i, `<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>`]
+];
+const CARD_DEFAULT_ICON = `<path d="M5 12h14M13 6l6 6-6 6"/>`;
+
+function cardIcon(text) {
+  const hit = CARD_ICONS.find(([re]) => re.test(text));
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${hit ? hit[1] : CARD_DEFAULT_ICON}</svg>`;
+}
+
+function renderCardBody(slide) {
+  const bullets = slide.items.filter(i => i.kind === "bullet");
+  const texts = slide.items.filter(i => i.kind === "text");
+  const warns = slide.items.filter(i => i.kind === "warn");
+  const tips = slide.items.filter(i => i.kind === "tip");
+  const cols = bullets.length <= 4 ? bullets.length : 3;
+
+  const intro = texts.map(i => `<p class="s-p c-intro"${src(i.line)}>${inline(i.text)}</p>`).join("");
+  const cards = bullets.map((i, n) => `
+    <div class="c-card">
+      <div class="c-ic">${cardIcon(i.text)}</div>
+      <span class="c-no">${String(n + 1).padStart(2, "0")}</span>
+      <p><span${src(i.line)}>${inline(i.text)}</span></p>
+    </div>`).join("");
+  // Kurze Hinweise nebeneinander, längere untereinander
+  const note = (list, cls, label, icon) => list.length ? `
+    <div class="c-note ${cls}${list.reduce((n, i) => n + i.text.length, 0) > 70 ? " c-stack" : ""}">
+      <div class="c-lbl">${icon}${label}</div>
+      <ul>${list.map(i => `<li><span${src(i.line)}>${inline(i.text)}</span></li>`).join("")}</ul>
+    </div>` : "";
+
+  return `
+    <div class="s-body c-body">
+      ${intro}
+      ${bullets.length ? `<div class="c-cards${cols === 1 ? " c-one" : ""}" style="grid-template-columns:repeat(${cols},minmax(0,1fr))">${cards}</div>` : ""}
+      ${note(warns, "c-warn", L.safety, ICONS.warn)}
+      ${note(tips, "c-tip", L.tip, ICONS.tip)}
+    </div>`;
+}
+
+// Karten nur, wenn es passt: kein Bild, kein App-Bildschirm, 1 bis 6 Punkte
+function useCards(slide) {
+  const bullets = slide.items.filter(i => i.kind === "bullet").length;
+  return !slide.screen && !slide.image && bullets >= 1 && bullets <= 6;
+}
+
 function renderContentSlide(slide, theme, meta, index, total) {
   const isStep = slide.type === "step";
+
+  if (useCards(slide)) {
+    return `
+    <section class="${slideClass(theme, "c-slide" + (isStep ? " c-step" : ""))}" style="${themeStyle(theme)}">
+      <div class="s-head">
+        ${isStep ? `<div class="s-badge">${slide.stepNumber}</div>` : ""}
+        <div>
+          ${isStep ? `<div class="s-kicker">${stepText(slide.stepNumber, meta.stepCount)}</div>` : ""}
+          <h2 class="s-title"${src(slide.titleLine)}>${inline(slide.title)}</h2>
+        </div>
+      </div>
+      ${renderCardBody(slide)}
+      ${footer(theme, meta, index, total, isStep ? stepText(slide.stepNumber, meta.stepCount) : "")}
+    </section>`;
+  }
   const main = renderItems(slide.items);
   const boxes = renderBoxes(slide.items);
   const image = slide.image ? `<img class="s-img" src="${escapeHtml(slide.image)}" alt="${escapeHtml(slide.title)}">` : "";
@@ -315,7 +397,7 @@ function fitSlide(html) {
   if (!targets.length) return html;
 
   const foot = slide.querySelector(".s-foot");
-  const limit = (foot ? foot.getBoundingClientRect().top : slide.getBoundingClientRect().bottom) - 16;
+  const limit = (foot ? foot.getBoundingClientRect().top : slide.getBoundingClientRect().bottom) - 24;
   const top = slide.getBoundingClientRect().top;
   const fits = () => targets.every(t => [...t.querySelectorAll("*")].every(el => {
     const r = el.getBoundingClientRect();

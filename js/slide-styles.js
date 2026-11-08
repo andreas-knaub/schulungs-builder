@@ -164,4 +164,33 @@ const SLIDE_CSS = `
 
 /* Logo auf dunkler Kopfleiste weiß darstellen (Haken im Design-Editor) */
 .layout-light.head-dark .l-logo img.logo-invert{filter:brightness(0) invert(1)}
+
+/* Karten-Layout für Schritt- und Inhaltsfolien */
+.c-slide .s-head{padding-top:40px}
+.c-step .s-badge{width:64px;height:64px;border-radius:16px;font-size:32px;font-weight:800;background:var(--accent);color:#fff}
+.layout-light.c-step .s-head .s-kicker{display:block;font-size:14px;letter-spacing:.14em}
+.c-slide .s-title{font-size:42px;font-weight:800;margin-top:2px}
+.c-body{display:flex;flex-direction:column;gap:20px;padding:30px 72px 40px}
+.c-intro{margin:0}
+.c-cards{display:grid;gap:18px;align-items:stretch}
+.c-card{background:var(--surface);border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.layout-light .c-card{background:#FFFFFF;box-shadow:0 1px 3px rgba(16,24,40,.06),0 6px 18px rgba(16,24,40,.05)}
+.c-ic{width:52px;height:52px;border-radius:14px;background:var(--tip-bg);color:var(--accent-text);display:flex;align-items:center;justify-content:center}
+.c-ic svg{width:28px;height:28px}
+.c-no{font-size:13px;font-weight:700;letter-spacing:.1em;color:var(--muted-text)}
+.c-card p{margin:0;font-size:22px;line-height:1.35;color:var(--text);overflow-wrap:anywhere;hyphens:auto}
+.c-note{border-radius:14px;padding:16px 24px;display:flex;gap:20px;align-items:center;border-left:6px solid}
+.c-note .c-lbl{flex:none;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;min-width:150px}
+.c-note .c-lbl svg{width:24px;height:24px}
+.c-note ul{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:8px 28px;font-size:19px;line-height:1.35}
+.c-note li{display:flex;gap:10px;align-items:baseline}
+.c-note li:before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.55;transform:translateY(-2px)}
+.c-warn{background:#FFF4DB;border-color:#E5A100;color:#3A3F47}
+.c-warn .c-lbl{color:#9A6200}
+.c-tip{background:var(--tip-bg);border-color:var(--accent);color:var(--tip-text)}
+.c-tip .c-lbl{color:var(--accent-text)}
+.c-note.c-stack ul{flex-direction:column;gap:6px}
+.c-one .c-card{flex-direction:row;align-items:center;gap:20px;padding:22px 26px}
+.c-one .c-no{display:none}
+.c-one .c-card p{font-size:24px}
 `;
