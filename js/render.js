@@ -293,6 +293,46 @@ function makeQr(text) {
   return qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
 }
 
+// ---------------------------------------------------------------
+// Automatisch einpassen: Ist zu viel Text auf einer Folie, wird der
+// Inhaltsbereich schrittweise kleiner gezoomt (bis 60 %), bis alles
+// sichtbar ist. Das Ergebnis steht direkt im HTML (style="zoom:…"),
+// gilt also überall: Vorschau, Präsentation, PDF und HTML-Export.
+// ---------------------------------------------------------------
+let fitBox = null;
+
+function fitSlide(html) {
+  if (typeof document === "undefined" || !document.body) return html;
+  if (!fitBox) {
+    fitBox = document.createElement("div");
+    fitBox.setAttribute("aria-hidden", "true");
+    fitBox.style.cssText = "position:fixed;left:-20000px;top:0;width:1280px;height:720px;visibility:hidden;pointer-events:none;overflow:hidden";
+    document.body.appendChild(fitBox);
+  }
+  fitBox.innerHTML = html;
+  const slide = fitBox.firstElementChild;
+  const targets = slide ? [...slide.querySelectorAll(".s-body, .tl-main, .e-grid")] : [];
+  if (!targets.length) return html;
+
+  const foot = slide.querySelector(".s-foot");
+  const limit = (foot ? foot.getBoundingClientRect().top : slide.getBoundingClientRect().bottom) - 16;
+  const top = slide.getBoundingClientRect().top;
+  const fits = () => targets.every(t => [...t.querySelectorAll("*")].every(el => {
+    const r = el.getBoundingClientRect();
+    return r.height === 0 || (r.bottom <= limit && r.top >= top);
+  }));
+
+  if (fits()) { fitBox.innerHTML = ""; return html; }
+  let zoom = 1;
+  while (zoom > 0.6 && !fits()) {
+    zoom = Math.round((zoom - 0.05) * 100) / 100;
+    targets.forEach(t => { t.style.zoom = zoom; });
+  }
+  const out = slide.outerHTML;
+  fitBox.innerHTML = "";
+  return out;
+}
+
 // Baut die komplette Präsentation: Liste von HTML-Strings (eine pro Folie)
 function buildDeck(parsed, theme, qrLink) {
   useLabels(parsed.meta.sprache);
@@ -309,5 +349,5 @@ function buildDeck(parsed, theme, qrLink) {
     return renderContentSlide(slide, theme, meta, i, total);
   });
   html.push(renderEndSlide(parsed, theme, meta, total - 1, total, makeQr(meta.link || qrLink)));
-  return { html, meta };
+  return { html: html.map(fitSlide), meta };
 }

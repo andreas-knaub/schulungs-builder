@@ -40,6 +40,8 @@ version: 1.0
 
 Regeln:
 - Trenne Folien immer mit einer Zeile, die nur --- enthält.
+- Hinweise beginnen direkt mit "! " oder "> ", nie mit "- ! " oder "- > ". Höchstens 2 Hinweise pro Schritt.
+- Jeder Punkt höchstens etwa 12 Wörter, damit alles auf eine Folie passt. Viel Inhalt lieber auf zwei Schritte aufteilen.
 - Erstelle am Ende 1 bis 2 Wissensfragen mit je 3 bis 4 Antworten, genau eine richtig.
 - Schreibe auf Deutsch, in einfacher Sprache, Sie-Form.
 - Erfinde keine Fakten, die nicht im Rohtext stehen. Wenn etwas fehlt, lass es weg.

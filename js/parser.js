@@ -107,6 +107,11 @@ function parseTraining(source) {
       } else if (/^\[(x|X| )\]/.test(line)) {
         const text = line.slice(3).trim();
         slide.answers.push({ text, correct: line[1].toLowerCase() === "x", line: remember(no, raw, text, "answer") });
+      } else if (/^- [!>] /.test(line)) {
+        // "- ! Text" ist gemeint als Hinweis (so schreibt es die KI manchmal)
+        const text = line.slice(4).trim();
+        const kind = line[2] === "!" ? "warn" : "tip";
+        slide.items.push({ kind, text, line: remember(no, raw, text, kind) });
       } else if (line.startsWith("- ")) {
         const text = line.slice(2).trim();
         slide.items.push({ kind: "bullet", text, line: remember(no, raw, text, "bullet") });

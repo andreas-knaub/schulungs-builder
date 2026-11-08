@@ -346,3 +346,4 @@ input[type="search"] { font: inherit; color: var(--ui-text); background: #fff; b
   .b-bar, #mode-slide, #mode-all .preview, .b-text { padding-left: 16px; padding-right: 16px; }
   .slide-tools { flex-wrap: wrap; }
 }
+.fit-note { width: 100%; max-width: 1100px; margin: 12px 0 0; padding: 10px 14px; border-radius: 8px; background: #FFF6E0; color: #7A4B00; font-size: 13.5px; }

@@ -110,6 +110,15 @@ function renderStage() {
     el.classList.add("is-editable");
   });
 
+  // Hinweis, wenn der Text verkleinert werden musste
+  const zoomed = ex.scaler.querySelector(".s-body[style*='zoom'], .tl-main[style*='zoom']");
+  const zoom = zoomed ? parseFloat(zoomed.style.zoom) : 1;
+  const note = $("fit-note");
+  note.hidden = zoom >= 0.85;
+  note.textContent = zoom <= 0.6
+    ? "Sehr viel Text: Die Schrift ist schon auf das Minimum verkleinert. Teilen Sie den Inhalt besser auf zwei Folien auf."
+    : `Viel Text: Die Schrift wurde auf ${Math.round(zoom * 100)} % verkleinert, damit alles auf die Folie passt.`;
+
   ex.addLine.disabled = !slide || slide.type === "title";
   ex.addLine.textContent = slide && slide.type === "quiz" ? "＋ Antwort hinzufügen" : "＋ Zeile hinzufügen";
   ex.delSlide.disabled = !slide;

@@ -268,6 +268,8 @@ function init() {
   window.addEventListener("afterprint", () => { els.printRoot.innerHTML = ""; });
 
   render();
+  // Schriften laden nach: danach neu einpassen
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => render());
 }
 
 init();
