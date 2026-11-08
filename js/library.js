@@ -287,8 +287,10 @@ function seedLibrary() {
     ({ id, department, unit, station, status, source, themeId: "", translations: {}, updatedAt: libDate(daysAgo) });
   return {
     version: 2,
+    seed: SEED_VERSION,
     departments: JSON.parse(JSON.stringify(SEED_DEPARTMENTS)),
     trainings: [
+      ...seedExtraTrainings(),
       t("tr-tuer", "montage", "tueren", "t-04", "freigegeben", SAMPLE_TRAINING, 3),
       t("tr-scheinwerfer", "montage", "frontend", "m-12", "freigegeben", SEED_SOURCES.scheinwerfer, 1),
       t("tr-qualiscan", "montage", "endmontage", "alle", "freigegeben", SAMPLE_SOFTWARE, 0),
@@ -337,7 +339,16 @@ function isOldLibrary(data) {
 function loadLibrary() {
   try {
     const data = JSON.parse(localStorage.getItem(LIBRARY_KEY));
-    if (data && Array.isArray(data.departments) && Array.isArray(data.trainings)) return data;
+    if (data && Array.isArray(data.departments) && Array.isArray(data.trainings)) {
+      // Neue Beispiel-Schulungen einmalig ergänzen (eigene Schulungen bleiben)
+      if ((data.seed || 1) < SEED_VERSION) {
+        const known = new Set(data.trainings.map(t => t.id));
+        seedExtraTrainings().forEach(t => { if (!known.has(t.id)) data.trainings.push(t); });
+        data.seed = SEED_VERSION;
+        saveLibrary(data);
+      }
+      return data;
+    }
   } catch (e) { /* ignorieren */ }
   let lib = seedLibrary();
   try {
