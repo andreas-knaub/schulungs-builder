@@ -4,13 +4,13 @@
 // ---------------------------------------------------------------
 
 const LANGUAGES = [
-  { code: "de", target: "Deutsche", name: "Deutsch",     english: "German" },
-  { code: "en", target: "Englische", name: "English",     english: "English" },
-  { code: "tr", target: "Türkische", name: "Türkçe",      english: "Turkish" },
-  { code: "ro", target: "Rumänische", name: "Română",      english: "Romanian" },
-  { code: "pl", target: "Polnische", name: "Polski",      english: "Polish" },
-  { code: "ru", target: "Russische", name: "Русский",     english: "Russian" },
-  { code: "it", target: "Italienische", name: "Italiano",    english: "Italian" }
+  // name = Eigenname (für Mitarbeiter im Präsentationsmodus), de = Name im Builder
+  { code: "de", target: "Deutsche",   name: "Deutsch", de: "Deutsch",   english: "German" },
+  { code: "en", target: "Englische",  name: "English", de: "Englisch",  english: "English" },
+  { code: "tr", target: "Türkische",  name: "Türkçe",  de: "Türkisch",  english: "Turkish" },
+  { code: "ro", target: "Rumänische", name: "Română",  de: "Rumänisch", english: "Romanian" },
+  { code: "pl", target: "Polnische",  name: "Polski",  de: "Polnisch",  english: "Polish" },
+  { code: "ru", target: "Russische",  name: "Русский", de: "Russisch",  english: "Russian" }
 ];
 
 const LABELS = {
@@ -49,13 +49,7 @@ const LABELS = {
         author: "Автор", area: "Участок", summary: "Итоги", done: "Обучение завершено",
         doneText: "Вы изучили все материалы по теме «{t}». Если есть вопросы, обратитесь к руководителю бригады.",
         warnings: "Указания по безопасности", questions: "Контрольные вопросы", qr: "Открыть обучение на рабочем месте",
-        quiz: "Проверка знаний" },
-  it: { material: "Materiale formativo", steps: "Fasi di lavoro", step: "Fase {n} di {m}", slide: "Diapositiva",
-        safety: "Sicurezza", tip: "Nota", minutes: "Minuti", duration: "Durata", version: "Versione",
-        author: "Creato da", area: "Area", summary: "Riepilogo", done: "Formazione completata",
-        doneText: "Hai completato tutti i contenuti di {t}. Per domande rivolgiti al tuo team leader.",
-        warnings: "Avvisi di sicurezza", questions: "Domande di verifica", qr: "Apri la formazione alla postazione",
-        quiz: "Verifica delle conoscenze" }
+        quiz: "Проверка знаний" }
 };
 
 // Aktuelle Beschriftungen (wird beim Erstellen der Folien gesetzt)

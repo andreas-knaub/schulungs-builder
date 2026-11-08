@@ -23,25 +23,6 @@
     <a href="#/erstellen" data-nav="erstellen">Schulung erstellen</a>
   </nav>
 
-  <div class="toolbar" id="builder-toolbar">
-    <label class="field-inline">
-      <span>Design</span>
-      <select id="theme-select" aria-label="Corporate Design wählen"></select>
-    </label>
-    <button type="button" class="btn" id="btn-design">Design anpassen</button>
-    <label class="field-inline">
-      <span>Sprache</span>
-      <select id="lang-select" aria-label="Sprache der Schulung wählen"></select>
-    </label>
-    <button type="button" class="btn btn-ai" id="btn-ai">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 17l.8 2.2L22 20l-2.2.8L19 23l-.8-2.2L16 20l2.2-.8z"/></svg>
-      Mit KI erstellen
-    </button>
-    <button type="button" class="btn" id="btn-present">Präsentieren</button>
-    <button type="button" class="btn" id="btn-pdf">PDF</button>
-    <button type="button" class="btn" id="btn-html">HTML exportieren</button>
-    <button type="button" class="btn btn-primary" id="btn-save-lib">In Bibliothek speichern</button>
-  </div>
 </header>
 
 <!-- Startseite -->
@@ -90,19 +71,102 @@
   </div>
 </section>
 
-<main class="workspace view" id="view-builder" hidden>
-  <section class="editor-pane" aria-label="Editor">
-    <div class="pane-head">
-      <h2>Inhalt</h2>
-      <div class="pane-actions">
-        <button type="button" class="link-btn" id="btn-sample">Beispiel Montage</button>
-        <button type="button" class="link-btn" id="btn-sample-sw">Beispiel Software</button>
+<main class="builder view" id="view-builder" hidden>
+  <!-- Sidebar: alles Einstellen an einem Ort -->
+  <aside class="b-side" aria-label="Einstellungen">
+    <div class="b-sec">
+      <button type="button" class="btn btn-ai b-wide" id="btn-ai">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 17l.8 2.2L22 20l-2.2.8L19 23l-.8-2.2L16 20l2.2-.8z"/></svg>
+        Mit KI erstellen
+      </button>
+      <div class="b-samples">
+        <span>Beispiel:</span>
+        <button type="button" class="link-btn" id="btn-sample">Montage</button>
+        <button type="button" class="link-btn" id="btn-sample-sw">Software</button>
         <button type="button" class="link-btn" id="btn-clear">Leeren</button>
       </div>
     </div>
-    <textarea id="editor" spellcheck="false" aria-label="Schulungstext"></textarea>
 
-    <details class="help">
+    <div class="b-sec">
+      <div class="b-lbl">Design</div>
+      <div class="b-row">
+        <select id="theme-select" aria-label="Corporate Design wählen"></select>
+        <button type="button" class="btn b-icon" id="btn-design" title="Design anpassen" aria-label="Design anpassen">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="b-sec">
+      <div class="b-lbl">Sprache</div>
+      <div class="b-langs" id="lang-buttons" role="group" aria-label="Sprache der Schulung"></div>
+      <select id="lang-select" hidden aria-hidden="true" tabindex="-1"></select>
+    </div>
+
+    <div class="b-slides">
+      <div class="b-lbl">Folien <span id="slide-count"></span></div>
+      <ol class="b-list" id="slide-list"></ol>
+      <button type="button" class="link-btn b-add" id="btn-add-slide">＋ Folie hinzufügen</button>
+    </div>
+
+    <div class="b-foot">
+      <div class="b-row3">
+        <button type="button" class="btn" id="btn-present">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M7 4v16l13-8z"/></svg>
+          Präsentieren
+        </button>
+        <button type="button" class="btn" id="btn-pdf">PDF</button>
+        <button type="button" class="btn" id="btn-html">HTML</button>
+      </div>
+      <button type="button" class="btn btn-dark b-wide" id="btn-save-lib">In Bibliothek speichern</button>
+    </div>
+  </aside>
+
+  <section class="b-main" aria-label="Arbeitsbereich">
+    <div class="b-bar">
+      <span class="stats" id="stats"></span>
+      <div class="seg" role="tablist" aria-label="Ansicht">
+        <button type="button" role="tab" data-mode="slide">Folie</button>
+        <button type="button" role="tab" data-mode="all">Alle Folien</button>
+        <button type="button" role="tab" data-mode="text">Text</button>
+      </div>
+    </div>
+
+    <!-- Ansicht 1: eine Folie groß, direkt bearbeiten -->
+    <div class="b-mode" id="mode-slide">
+      <div class="stage-wrap" id="stage-wrap">
+        <div class="stage" id="stage"><div class="stage-scaler" id="stage-scaler"></div></div>
+
+      </div>
+      <div class="slide-tools">
+        <button type="button" class="btn" id="btn-add-line">＋ Zeile hinzufügen</button>
+        <div class="edit-pop" id="edit-pop" role="toolbar" aria-label="Zeile umwandeln" hidden>
+          <span>Zeile als</span>
+          <button type="button" data-kind="bullet">• Punkt</button>
+          <button type="button" data-kind="warn" class="is-warn">! Warnung</button>
+          <button type="button" data-kind="tip">i Tipp</button>
+          <button type="button" data-kind="delete" title="Zeile löschen" aria-label="Zeile löschen">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>
+          </button>
+        </div>
+        <span class="slide-nav">
+          <button type="button" class="btn b-icon" id="btn-prev-slide" aria-label="Vorherige Folie">&#8592;</button>
+          <button type="button" class="btn b-icon" id="btn-next-slide" aria-label="Nächste Folie">&#8594;</button>
+        </span>
+        <button type="button" class="btn btn-ghost-danger" id="btn-del-slide">Folie löschen</button>
+      </div>
+      <p class="b-hint"><b>Klicken</b> = Text direkt ändern · <b>Enter</b> = neue Zeile · <b>Esc</b> = abbrechen · <b>← →</b> = Folie wechseln</p>
+    </div>
+
+    <!-- Ansicht 2: alle Folien -->
+    <div class="b-mode" id="mode-all" hidden>
+      <div class="preview" id="preview"></div>
+    </div>
+
+    <!-- Ansicht 3: Text für Profis -->
+    <div class="b-mode b-text" id="mode-text" hidden>
+      <textarea id="editor" spellcheck="false" aria-label="Schulungstext"></textarea>
+      <details class="help">
       <summary>Syntax-Hilfe</summary>
       <table>
         <tr><td><code>---</code></td><td>Neue Folie</td></tr>
@@ -125,14 +189,7 @@
         <tr><td><code>untertitel:</code> <code>bereich:</code> <code>dauer:</code> <code>version:</code> <code>autor:</code> <code>link:</code></td><td>Angaben auf der Titelfolie, <code>link</code> wird zum QR-Code</td></tr>
       </table>
     </details>
-  </section>
-
-  <section class="preview-pane" aria-label="Vorschau">
-    <div class="pane-head">
-      <h2>Vorschau</h2>
-      <span class="stats" id="stats"></span>
     </div>
-    <div class="preview" id="preview"></div>
   </section>
 </main>
 
@@ -345,6 +402,7 @@
 <script src="js/design-editor.js"></script>
 <script src="js/upload.js"></script>
 <script src="js/translate.js"></script>
+<script src="js/slide-editor.js"></script>
 <script src="js/library.js"></script>
 <script src="js/portal.js"></script>
 </body>

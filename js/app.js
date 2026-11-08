@@ -51,7 +51,7 @@ function render() {
   deck = buildDeck(parsed, theme, currentQrLink());
 
   if (parsed.slides.length === 0) {
-    els.preview.innerHTML = `<p class="empty">Noch kein Inhalt. Schreiben Sie links los, laden Sie das Beispiel oder nutzen Sie „Mit KI erstellen“.</p>`;
+    els.preview.innerHTML = `<p class="empty">Noch kein Inhalt. Nutzen Sie „Mit KI erstellen“, laden Sie ein Beispiel oder schreiben Sie in der Ansicht „Text“.</p>`;
   } else {
     els.preview.innerHTML = deck.html.map((html, i) => `
       <div class="frame" tabindex="0" role="button" data-index="${i}" aria-label="Folie ${i + 1} präsentieren">
@@ -62,6 +62,7 @@ function render() {
 
   els.stats.textContent = `${deck.html.length} Folien · ${parsed.stepCount} Schritte`;
   fitPreview();
+  if (typeof renderBuilder === "function") renderBuilder(parsed); // Sidebar und Folien-Ansicht
   if (!els.present.hidden) showPresentSlide(presentIndex);
 }
 
@@ -121,7 +122,7 @@ document.addEventListener("keydown", e => {
 
 document.addEventListener("click", e => {
   const option = e.target.closest(".q-opt");
-  if (!option) return;
+  if (!option || option.closest("#stage")) return; // beim Bearbeiten nicht auflösen
   e.stopPropagation();
   const group = option.closest(".q-opts");
   group.querySelectorAll(".q-opt").forEach(o => {

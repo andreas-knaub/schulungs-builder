@@ -19,17 +19,20 @@ function inline(text) {
   return escapeHtml(text).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
 }
 
+// data-src = Zeile im Text, damit man direkt auf der Folie bearbeiten kann
+function src(line) { return line === null || line === undefined ? "" : ` data-src="${line}"`; }
+
 function renderItems(items) {
   let html = "";
   let list = [];
   const flush = () => {
-    if (list.length) html += `<ul class="s-list">${list.map(t => `<li><span>${inline(t)}</span></li>`).join("")}</ul>`;
+    if (list.length) html += `<ul class="s-list">${list.map(i => `<li><span${src(i.line)}>${inline(i.text)}</span></li>`).join("")}</ul>`;
     list = [];
   };
   for (const item of items) {
-    if (item.kind === "bullet") { list.push(item.text); continue; }
+    if (item.kind === "bullet") { list.push(item); continue; }
     flush();
-    if (item.kind === "text") html += `<p class="s-p">${inline(item.text)}</p>`;
+    if (item.kind === "text") html += `<p class="s-p"${src(item.line)}>${inline(item.text)}</p>`;
   }
   flush();
   return html;
@@ -39,8 +42,8 @@ function renderBoxes(items) {
   return items
     .filter(i => i.kind === "warn" || i.kind === "tip")
     .map(i => i.kind === "warn"
-      ? `<div class="s-box s-warn">${ICONS.warn}<div><b>${L.safety}</b>${inline(i.text)}</div></div>`
-      : `<div class="s-box s-tip">${ICONS.tip}<div><b>${L.tip}</b>${inline(i.text)}</div></div>`)
+      ? `<div class="s-box s-warn">${ICONS.warn}<div><b>${L.safety}</b><span${src(i.line)}>${inline(i.text)}</span></div></div>`
+      : `<div class="s-box s-tip">${ICONS.tip}<div><b>${L.tip}</b><span${src(i.line)}>${inline(i.text)}</span></div></div>`)
     .join("");
 }
 
@@ -84,8 +87,8 @@ function renderTitleSlideLight(slide, theme, meta, stepCount, chips) {
       <div class="tl-logo-area"><div class="tl-logo">${theme.logo}</div></div>
       <div class="tl-main">
         <div class="s-kicker">${L.material}${meta.bereich ? " · " + escapeHtml(meta.bereich) : ""}</div>
-        <h1>${inline(slide.title)}</h1>
-        ${meta.untertitel ? `<p class="t-sub">${inline(meta.untertitel)}</p>` : ""}
+        <h1${src(slide.titleLine)}>${inline(slide.title)}</h1>
+        ${meta.untertitel ? `<p class="t-sub"${src(meta.untertitelLine)}>${inline(meta.untertitel)}</p>` : ""}
         ${renderItems(slide.items)}
         <div class="tl-kpis">${kpis}</div>
         ${chips ? `<div class="t-meta">${chips}</div>` : ""}
@@ -116,8 +119,8 @@ function renderTitleSlide(slide, theme, meta, stepCount) {
         <div class="t-steps">${stepCount}<span>${L.steps}</span></div>
       </div>
       <div class="t-main">
-        <h1>${inline(slide.title)}</h1>
-        ${meta.untertitel ? `<p class="t-sub">${inline(meta.untertitel)}</p>` : ""}
+        <h1${src(slide.titleLine)}>${inline(slide.title)}</h1>
+        ${meta.untertitel ? `<p class="t-sub"${src(meta.untertitelLine)}>${inline(meta.untertitel)}</p>` : ""}
         ${renderItems(slide.items)}
         ${chips ? `<div class="t-meta">${chips}</div>` : ""}
       </div>
@@ -183,7 +186,7 @@ function renderContentSlide(slide, theme, meta, index, total) {
         ${isStep ? `<div class="s-badge">${slide.stepNumber}</div>` : ""}
         <div>
           <div class="s-kicker">${isStep ? stepText(slide.stepNumber, meta.stepCount) : escapeHtml(meta.trainingTitle || "")}</div>
-          <h2 class="s-title">${inline(slide.title)}</h2>
+          <h2 class="s-title"${src(slide.titleLine)}>${inline(slide.title)}</h2>
         </div>
         ${headLogo(theme)}
       </div>`;
@@ -219,7 +222,7 @@ function renderContentSlide(slide, theme, meta, index, total) {
         ${isStep ? `<div class="s-badge">${slide.stepNumber}</div>` : ""}
         <div>
           <div class="s-kicker">${isStep ? stepText(slide.stepNumber, meta.stepCount) : escapeHtml(meta.trainingTitle || "")}</div>
-          <h2 class="s-title">${inline(slide.title)}</h2>
+          <h2 class="s-title"${src(slide.titleLine)}>${inline(slide.title)}</h2>
         </div>
         ${headLogo(theme)}
       </div>
@@ -232,7 +235,7 @@ function renderQuizSlide(slide, theme, meta, index, total) {
   const letters = "ABCDEF";
   const opts = slide.answers.map((a, i) => `
     <button type="button" class="q-opt" data-correct="${a.correct}">
-      <span class="q-letter">${letters[i] || "•"}</span><span>${inline(a.text)}</span>
+      <span class="q-letter">${letters[i] || "•"}</span><span${src(a.line)}>${inline(a.text)}</span>
     </button>`).join("");
 
   return `
@@ -240,13 +243,13 @@ function renderQuizSlide(slide, theme, meta, index, total) {
       <div class="s-head">
         <div>
           <div class="s-kicker">${escapeHtml(meta.trainingTitle || L.quiz)}</div>
-          <h2 class="s-title">${inline(slide.title || L.quiz)}</h2>
+          <h2 class="s-title"${src(slide.title ? slide.titleLine : null)}>${inline(slide.title || L.quiz)}</h2>
         </div>
         ${headLogo(theme)}
       </div>
       <div class="s-body single">
         <div class="s-col">
-          <p class="q-question">${inline(slide.question)}</p>
+          <p class="q-question"${src(slide.questionLine)}>${inline(slide.question)}</p>
           <div class="q-opts">${opts}</div>
         </div>
       </div>

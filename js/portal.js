@@ -15,7 +15,7 @@ const portal = {
 const p$ = id => document.getElementById(id);
 const pv = {
   start: p$("view-start"), library: p$("view-library"), builder: p$("view-builder"),
-  toolbar: p$("builder-toolbar"), heroLogo: p$("hero-logo"),
+  heroLogo: p$("hero-logo"),
   startDeps: p$("start-deps"), startSearch: p$("start-search"), startForm: p$("start-search-form"),
   crumbs: p$("lib-crumbs"), title: p$("lib-title"), content: p$("lib-content"),
   search: p$("lib-search"), editorMode: p$("lib-editor-mode"), admin: p$("lib-admin"),
@@ -518,12 +518,11 @@ function route() {
   pv.start.hidden = view !== "start";
   pv.library.hidden = view !== "schulungen";
   pv.builder.hidden = view !== "erstellen";
-  pv.toolbar.hidden = view !== "erstellen";
   document.querySelectorAll(".mainnav a").forEach(a => a.classList.toggle("active", a.dataset.nav === view));
 
   if (view === "start") renderStart();
   if (view === "schulungen") renderLibrary(parts[1], parts[2], parts[3]);
-  if (view === "erstellen") requestAnimationFrame(fitPreview);
+  if (view === "erstellen") requestAnimationFrame(() => { fitPreview(); if (typeof fitStage === "function") fitStage(); });
 }
 
 (function initPortal() {
